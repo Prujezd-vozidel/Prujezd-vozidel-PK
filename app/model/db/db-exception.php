@@ -2,7 +2,7 @@
 
 class DB_Exception extends Exception {
     
-    public function __construct($message=false, $code=false) {
+    public function __construct($message = false, $code = false) {
         if (!$message) {
             $this->message = mysql_error();
         } 

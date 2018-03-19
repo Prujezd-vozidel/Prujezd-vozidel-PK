@@ -1,6 +1,6 @@
-﻿<?php
+<?php
 
-require_once 'db-exception.php';
+require_once "db-exception.php";
 
 class DB_PDO {
   
