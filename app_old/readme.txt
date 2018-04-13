@@ -1,0 +1,1 @@
+Tady je pùvodní aplikace. Model se nakopíruje do složky s lumenem.

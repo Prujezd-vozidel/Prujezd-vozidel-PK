@@ -1,0 +1,1 @@
+Sem pøijde vše, co se týká klientské aplikace - frontendu
