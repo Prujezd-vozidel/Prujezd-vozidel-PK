@@ -1,78 +1,236 @@
-<!DOCTYPE html>
-<html lang='cs'>
+<!doctype html>
+<html ng-app="PVPK" class="no-js" lang="cs">
+<head>
+    <meta charset="utf-8">
+    <title>Průjezd vozidel - Plzeňský kraj</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-    <head>
-        <title>Průjezd vozidel - Plzeňský kraj</title>
-        <meta charset="utf-8" />
-        <meta name="description" content="" />
-        <meta name="keywords" content="" />
-        <meta name="robots" content="all" />
-        <link rel="stylesheet" href="css/main.css" type="text/css" />
-    </head>
-    
-    <body>
-        <div>
-            <h1>Zobrazení dat o průjezdu vozidel pro Plzeňský kraj</h1>
-				<div>
-					<div>
-						<a href="control.php">Úvodní strana</a>
-						<a href="control.php?view=xxx">Další odkaz</a>
-					</div>
-					<div>
-						<form action="control.php" method="post" id="dateSelector">
-							<fieldset>
-								<div>Vyberte datum:</div>
-								<!--?php echo date("Y-m-d", strtotime("-1 day")); ?> -->
-								<input type="date" name="date" max="" />
-								<input type="submit" value="Zobrazit" />
-							</fieldset>
-						</form>
+    <meta name="description" content="Zobrazení dat o průjezdu vozidel pro Plzeňský kraj">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-						<table>
-							<tr>
-								<th>Detektor</th>
-								<th>Datum a čas</th>
-								<th>Intenzita</th>
-								<th>Intenzita "N"</th>
-								<th>Obsazenost</th>
-								<th>Rychlost</th>
-								<th>Stav</th>
-								<th>Typ vozidla</th>
-								<th>Trvání v setinách</th>
-								<th>Rychlost (historie)</th>
-								<th>Typ vozidla "10"</th>
-							</tr>
-							
-							<!--?php
-								for ($i = 0; $i < count($traffic); $i++) {
-									echo "<tr>".$traffic[$i]->toString()."</tr>";
-								}
-							?-->
-							
-						</table>
+    <link rel="apple-touch-icon" href="./assets/img/favicon.png">
+    <link rel="icon" href="./assets/img/favicon.png">
 
-						<table>
-							<tr>
-								<th>Název</th>
-								<th>Město</th>
-								<th>Ulice</th>
-								<th>Zařízení</th>
-								<th>Oblast</th>
-							</tr>
-							
-							<!--?php
-								for ($i = 0; $i < count($locations); $i++) {
-									echo "<tr>".$locations[$i]->toString()."</tr>";
-								}
-							?-->
-							
-						</table>
-					</div>
-				</div>
-            <div>
-                &copy; ASWI team 2018   
+    <script>
+        document.documentElement.className = document.documentElement.className.replace("no-js", "js");
+    </script>
+
+    <link rel="stylesheet" href="./assets/css/normalize.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+          integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" media="screen" href="./assets/css/main.css">
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.min.js"></script>
+    <script src="./app.js"></script>
+
+</head>
+<body>
+<!--[if lte IE 9]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade
+    your browser</a> to improve your experience and security.</p>
+<![endif]-->
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!--search section-->
+        <section class="search col-12 col-sm-6 col-lg-3" id="search">
+
+            <header class="mt-2">
+
+                <h1>
+                    <img src="./assets/img/favicon.png" alt="logo"> Průjezd vozidel
+                    <small class="text-muted">Plzeňský kraj</small>
+                </h1>
+
+            </header>
+
+            <div class="mb-4 mt-4">
+                <h4></h4>
+                <form method="get">
+
+                    <div class="form-group">
+                        <label for="searchLocation" class="h5">Hledání - lokalit</label>
+
+                        <input type="search" id="searchLocation" name="location"
+                               class="form-control form-control-sm"
+                               placeholder="Město, ulice, psč, ...">
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-group col">
+                            <label for="searchFromDate">Období</label>
+
+                            <input type="date" id="searchFromDate" name="fromDate"
+                                   class="form-control form-control-sm"
+                                   value="2018-04-01">
+                        </div>
+
+                        <div class="form-group col">
+                            <label for="searchToDate" class="invisible">Období</label>
+                            <input type="date" id="searchToDate" name="toDateTime"
+                                   class="form-control form-control-sm"
+                                   value="2018-04-30">
+                        </div>
+
+
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-group col">
+                            <label for="searchFromTime">Časové rozmezí dne</label>
+                            <input type="time" id="searchFromTime" class="form-control form-control-sm"
+                                   value="06:00">
+                        </div>
+
+                        <div class="form-group col">
+                            <label for="searchToTime" class="invisible">Časové rozmezí dne</label>
+                            <input type="time" id="searchToTime" class="form-control form-control-sm" value="20:00">
+                        </div>
+
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="searchVehicle">Vozidla</label>
+                        <select id="searchVehicle" class="custom-select custom-select-sm">
+                            <option value="all" selected>Všechna vozidla</option>
+                        </select>
+                    </div>
+                    <div class="custom-control custom-checkbox mb-3">
+                        <input type="checkbox" id="searchDirection" name="searchDirection"
+                               class="custom-control-input"
+                               checked>
+                        <label for="searchDirection" class="custom-control-label">Rozlišovat směr</label>
+                    </div>
+
+                    <input type="submit" value="Vyhledat" class="btn btn-primary btn-block">
+
+                </form>
+
+
+                <div class="result-locations mb-5 mt-5">
+                    <h5>Lokality</h5>
+
+
+                    <div class="list-group">
+                        <a href="#"
+                           class="list-group-item list-group-item-action flex-column align-items-start active">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Nýrsko, směr od Ž.Rudy</h6>
+                                <small>malé info</small>
+                            </div>
+                            <small>
+                                <address>U Banky, Nýrsko</address>
+                            </small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Domažlice, směr od Klatov</h6>
+                                <small class="text-muted">malé info</small>
+                            </div>
+                            <small>
+                                <address>Masarykova, Domažlice</address>
+                            </small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Hostouň, směr od Bělé</h6>
+                                <small class="text-muted">malé info</small>
+                            </div>
+                            <small class="text-muted">
+                                <address>Petra Bezruče, Hostouň</address>
+                            </small>
+                        </a>
+                    </div>
+
+                </div>
+
+
             </div>
-        </div>
-    </body>
-  
+
+            <footer class="text-center mb-2 mt-2">
+                2018 © FAV, ZČU
+            </footer>
+        </section>
+
+        <!--graph section-->
+        <section class="graph col-12 col-sm-6 col-lg-3" id="graph">
+
+            <header class="mt-2">
+
+                <h4>Grafy
+                    <button type="button" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h4>
+            </header>
+
+
+            <script src="assets/libs/Chart.min.js"></script>
+            <canvas id="myChart" width="100%" height="60"></canvas>
+            <script>
+                var ctx = document.getElementById("myChart").getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                        datasets: [{
+                            label: '# of Votes',
+                            data: [12, 19, 3, 5, 2, 3],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255,99,132,1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+
+        </section>
+
+        <!--map section-->
+        <section class="map col-12 col-sm-12 col-lg-6" id="map">
+
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1326226.1771813703!2d11.996870042985256!3d49.51688547407959!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470abf4bb3db6569%3A0x100af0f6614a850!2zUGx6ZcWIc2vDvSBrcmFq!5e0!3m2!1scs!2scz!4v1523814169200"
+                    width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen></iframe>
+        </section>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
+        integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+        crossorigin="anonymous"></script>
+
+
+</body>
 </html>
