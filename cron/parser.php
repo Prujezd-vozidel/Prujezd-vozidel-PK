@@ -6,10 +6,10 @@ require_once "location.php";
 class Parser {
     
     // Pro data o doprave - na kolik intervalu se ma rozdelit den (96 = 4 * 24 => intervaly po ctvrt hodine).
-    private $HOW_MANY_INTERVALS = 96;
+    public $HOW_MANY_INTERVALS = 96;
     
     // Pro data o doprave - jak dlouho v milisekundach trva jeden interval.
-    private $intervalMilli;
+    public $intervalMilli;
     
     private $name;
     private $path;
