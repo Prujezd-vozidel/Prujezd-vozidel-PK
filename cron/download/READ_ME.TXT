@@ -1,0 +1,1 @@
+Slozka pro ulozeni a extrahovani komprimovanych dat. Po zpracovani dojde k jejich odstraneni.

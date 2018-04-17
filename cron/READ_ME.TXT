@@ -1,0 +1,1 @@
+Slozka se skripty pro stazeni, rozbaleni, zpracovani a ulozeni zaznamu o doprave (skripty pro cron).
