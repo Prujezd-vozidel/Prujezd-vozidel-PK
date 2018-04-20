@@ -11,14 +11,30 @@
 |
 */
 
-$app->get('/', function () use ($app) {
-    return $app->version();
+$apiUrlRoot='/api/v1/';
+
+$app->get('/', function ()  {
+    return 'Funguje to.';
 });
 
-$app->get('/hello', function() {
-    return "world!";
-});
+/**
+ * Parametry v url:
+ * address
+ * showDirection
+ */
+$app->get($apiUrlRoot.'devices', 'DeviceController@getDevice');
 
-$app->get('/location', 'LocationController@getLocation');
+/**
+ * Parametry v url:
+ * dateFrom
+ * dateTo
+ * timeFrom
+ * timeTo
+ * direction
+ */
+$app->get($apiUrlRoot.'devices/{id}', 'DeviceController@getDeviceById');
 
-$app->get('/location/{id}', 'LocationController@findById');
+/**
+ * Vrati vsechny typy aut.
+ */
+$app->get($apiUrlRoot.'vehicles', 'VehicleController@getAll');
