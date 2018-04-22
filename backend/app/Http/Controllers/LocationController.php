@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 
 use App\Model\Location;
+use App\Model\Mesto;
 
 class LocationController extends Controller
 {
@@ -32,5 +33,12 @@ class LocationController extends Controller
     public function getLocation()
     {
         return response()->json(Location::withData(array("Česká Kubice, směr od Německa", "Česká Kubice", "Česká Kubice", "KP055", "5")));
+    }
+
+    /**
+     * Vrati vsechna mesta.
+     */
+    public function getCities() {
+        return Mesto::with('zarizeni')->get();
     }
 }

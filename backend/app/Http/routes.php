@@ -24,6 +24,8 @@ $app->get('/', function ()  {
  */
 $app->get($apiUrlRoot.'devices', 'DeviceController@getDevice');
 
+$app->get($apiUrlRoot.'devices/all', 'DeviceController@getAll');
+
 /**
  * Parametry v url:
  * dateFrom
@@ -38,3 +40,6 @@ $app->get($apiUrlRoot.'devices/{id}', 'DeviceController@getDeviceById');
  * Vrati vsechny typy aut.
  */
 $app->get($apiUrlRoot.'vehicles', 'VehicleController@getAll');
+
+$app->get($apiUrlRoot.'cities', 'LocationController@getCities');
+

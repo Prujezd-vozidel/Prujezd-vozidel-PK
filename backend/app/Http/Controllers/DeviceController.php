@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Model\Device;
+use App\Model\Zarizeni;
 use Illuminate\Http\Request;
 
 class DeviceController extends Controller
@@ -30,7 +31,8 @@ class DeviceController extends Controller
         $device->street = $address;
         $device->town = $address;
 
-        return response()->json($device);
+//        return response()->json($device);
+        return Zarizeni::findByAddressJoinAddress('Česká Kubice', 'Česká Kubice');
     }
 
     /**
@@ -48,13 +50,10 @@ class DeviceController extends Controller
      */
     public function getDeviceById(Request $request, $id) {
 
+        return Zarizeni::findByIdJoinAddress($id);
+    }
 
-        $device = new Device();
-        $device->id = $id;
-        $device->name = 'device';
-        $device->street = 'street';
-        $device->town = 'town';
-
-        return response()->json($device);
+    public function getAll() {
+        return Zarizeni::getAllJoinAddress();
     }
 }

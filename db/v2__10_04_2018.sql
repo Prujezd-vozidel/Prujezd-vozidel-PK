@@ -9,7 +9,7 @@
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
-
+SET FOREIGN_KEY_CHECKS=0;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -22,15 +22,6 @@ SET time_zone = "+00:00";
 
 -- --------------------------------------------------------
 
---
--- Struktura tabulky `mesto`
---
-
-CREATE TABLE IF NOT EXISTS `mesto` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `nazev` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=57 ;
 
 --
 -- Vypisuji data pro tabulku `mesto`
@@ -95,18 +86,6 @@ INSERT INTO `mesto` (`id`, `nazev`) VALUES
 (56, 'Přeštice ');
 
 -- --------------------------------------------------------
-
---
--- Struktura tabulky `ulice`
---
-
-CREATE TABLE IF NOT EXISTS `ulice` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `nazev` varchar(255) NOT NULL,
-  `mesto_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_ulice_mesto_idx` (`mesto_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=88 ;
 
 --
 -- Vypisuji data pro tabulku `ulice`
@@ -204,16 +183,6 @@ INSERT INTO `ulice` (`id`, `nazev`, `mesto_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `vozidla`
---
-
-CREATE TABLE IF NOT EXISTS `vozidla` (
-  `id` bigint(20) NOT NULL COMMENT 'Odpovídá číslu skupiny vozidla (TypVozidla10 v csv souboru s daty). Hodnoty 0-10.',
-  `nazev` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
 -- Vypisuji data pro tabulku `vozidla`
 --
 
@@ -231,19 +200,6 @@ INSERT INTO `vozidla` (`id`, `nazev`) VALUES
 (10, 'Autobus');
 
 -- --------------------------------------------------------
-
---
--- Struktura tabulky `zarizeni`
---
-
-CREATE TABLE IF NOT EXISTS `zarizeni` (
-  `id` varchar(20) NOT NULL COMMENT 'Odpovídá idDevice v location.csv.',
-  `smer_popis` varchar(255) NOT NULL COMMENT 'Odpovídá Name v locations.csv.',
-  `stav` int(11) NOT NULL,
-  `ulice_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_zarizeni_ulice1_idx` (`ulice_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Vypisuji data pro tabulku `zarizeni`
@@ -355,21 +311,6 @@ INSERT INTO `zarizeni` (`id`, `smer_popis`, `stav`, `ulice_id`) VALUES
 ('229', 'Dobřany', 0, 84);
 
 -- --------------------------------------------------------
-
---
--- Struktura tabulky `zaznam`
---
-
-CREATE TABLE IF NOT EXISTS `zaznam` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `vozidla_pocet` int(11) NOT NULL,
-  `rychlost_prumer` double NOT NULL,
-  `vozidla_id` bigint(20) NOT NULL,
-  `zaznam_cas_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_zaznam_vozidla1_idx` (`vozidla_id`),
-  KEY `fk_zaznam_zaznam_cas1_idx` (`zaznam_cas_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=39000 ;
 
 --
 -- Vypisuji data pro tabulku `zaznam`
@@ -39402,20 +39343,6 @@ INSERT INTO `zaznam` (`id`, `vozidla_pocet`, `rychlost_prumer`, `vozidla_id`, `z
 -- --------------------------------------------------------
 
 --
--- Struktura tabulky `zaznam_cas`
---
-
-CREATE TABLE IF NOT EXISTS `zaznam_cas` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `datetime_od` datetime NOT NULL,
-  `datetime_do` datetime NOT NULL,
-  `smer` int(11) NOT NULL COMMENT '1 nebo 2 viz struktura idDetektor v csv souboru s daty.',
-  `zarizeni_id` varchar(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_zaznam_cas_zarizeni1_idx` (`zarizeni_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=17055 ;
-
---
 -- Vypisuji data pro tabulku `zaznam_cas`
 --
 
@@ -56496,35 +56423,9 @@ INSERT INTO `zaznam_cas` (`id`, `datetime_od`, `datetime_do`, `smer`, `zarizeni_
 (17053, '2018-04-10 23:15:00', '2018-04-10 23:30:00', 1, '202'),
 (17054, '2018-04-10 23:45:00', '2018-04-11 00:00:00', 2, '202');
 
---
--- Omezení pro exportované tabulky
---
 
---
--- Omezení pro tabulku `ulice`
---
-ALTER TABLE `ulice`
-  ADD CONSTRAINT `fk_ulice_mesto` FOREIGN KEY (`mesto_id`) REFERENCES `mesto` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
---
--- Omezení pro tabulku `zarizeni`
---
-ALTER TABLE `zarizeni`
-  ADD CONSTRAINT `fk_zarizeni_ulice1` FOREIGN KEY (`ulice_id`) REFERENCES `ulice` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
---
--- Omezení pro tabulku `zaznam`
---
-ALTER TABLE `zaznam`
-  ADD CONSTRAINT `fk_zaznam_vozidla1` FOREIGN KEY (`vozidla_id`) REFERENCES `vozidla` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_zaznam_zaznam_cas1` FOREIGN KEY (`zaznam_cas_id`) REFERENCES `zaznam_cas` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
---
--- Omezení pro tabulku `zaznam_cas`
---
-ALTER TABLE `zaznam_cas`
-  ADD CONSTRAINT `fk_zaznam_cas_zarizeni1` FOREIGN KEY (`zarizeni_id`) REFERENCES `zarizeni` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
+  
+SET FOREIGN_KEY_CHECKS=1;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
