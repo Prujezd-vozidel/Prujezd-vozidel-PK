@@ -79,8 +79,9 @@ class Zaznam extends BaseModel
                 'zaznam_cas.datetime_do as datetimeTo',
                 'zaznam_cas.smer as direction',
                 'zaznam.rychlost_prumer as speedAverage',
+                'zaznam.vozidla_pocet as numberVehicle',
                 'vozidlo.nazev as typeVehicle',
-                'vozidlo.id as numberVehicle')
+                'vozidlo.id as typeVehicleId')
             ->where('zaznam_cas.datetime_od', '>=', $dateTimeFrom)
             ->where('zaznam_cas.datetime_do', '<=', $dateTimeTo)
             ->where('zaznam_cas.zarizeni_id', '=', $deviceId);
