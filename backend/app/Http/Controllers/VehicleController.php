@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 
 use App\Model\Vehicle;
+use App\Model\Vozidlo;
 
 class VehicleController extends Controller
 {
@@ -17,13 +18,6 @@ class VehicleController extends Controller
      * Vrati vsechny typy vozidel.
      */
     public function getAll() {
-        $vehicles = [
-            0 => Vehicle::create(0, 'neznámé'),
-            1 => Vehicle::create(1, 'motocykl'),
-            2 => Vehicle::create(2, 'osobní auto'),
-            3 => Vehicle::create(4, 'dodávka')
-        ];
-
-        return $vehicles;
+        return Vozidlo::all();
     }
 }

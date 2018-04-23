@@ -36,6 +36,8 @@ $app->get($apiUrlRoot.'devices/all', 'DeviceController@getAll');
  */
 $app->get($apiUrlRoot.'devices/{id}', 'DeviceController@getDeviceById');
 
+//$app->get($apiUrlRoot.'devices/lastday', 'DeviceController@lastDay');
+
 /**
  * Vrati vsechny typy aut.
  */
