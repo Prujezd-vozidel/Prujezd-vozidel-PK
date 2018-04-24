@@ -16,24 +16,17 @@ use Illuminate\Http\Request;
 class DeviceController extends Controller
 {
     public function getDevice(Request $request) {
-        $town = null;
-        $street = null;
+        $address = null;
         $showDirection=0;
         if ($request->has('address')) {
             $address = $request->input('address');
-            // todo: what is a format of address ?
-            $addressParts = explode(";", $address);
-            if (count($addressParts) == 2) {
-                $town = $addressParts[0];
-                $street = $addressParts[1];
-            }
         }
 
         if ($request->has('showDirection')) {
             $showDirection = ($request->input('showDirection') === 1);
         }
 
-        return Zarizeni::findByAddressJoinAddress($street, $town);
+        return Zarizeni::findByAddressJoinAddress($address);
     }
 
     /**

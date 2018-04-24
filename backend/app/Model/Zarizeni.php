@@ -34,25 +34,33 @@ class Zarizeni extends BaseModel
         return DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
-            ->select('zarizeni.id as id', 'zarizeni.smer_popis as name', 'ulice.nazev as street', 'ulice.id as street_id', 'mesto.nazev as town', 'mesto.id as town_id')
+            ->select('zarizeni.id as id',
+                'zarizeni.smer_popis as name',
+                'ulice.nazev as street',
+                'ulice.id as street_id',
+                'mesto.nazev as town',
+                'mesto.id as town_id')
             ->get();
     }
 
     /**
      * Vrati zarizeni nalezene podle adresy (mesto+ulice).
-     * Mesto a ulice jsou vraceny spolu se zarizenim.
      *
-     * @param $street Nazev ulice.
-     * @param $town Nazev mesta.
+     * @param $address Adresa, jsou vraceny zaznamy u kterych ulice, nebo mesto odpovida adrese.
      * @return mixed
      */
-    public static function findByAddressJoinAddress($street, $town) {
+    public static function findByAddressJoinAddress($address) {
         return DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
-            ->select('zarizeni.id as id', 'zarizeni.smer_popis as name', 'ulice.nazev as street', 'ulice.id as street_id', 'mesto.nazev as town', 'mesto.id as town_id')
-            ->where('ulice.nazev', '=', $street)
-            ->where('mesto.nazev', '=', $town)
+            ->select('zarizeni.id as id',
+                'zarizeni.smer_popis as name',
+                'ulice.nazev as street',
+                'ulice.id as street_id',
+                'mesto.nazev as town',
+                'mesto.id as town_id')
+            ->where('ulice.nazev', 'like', '%'.$address.'%')
+            ->orWhere('mesto.nazev', 'like', '%'.$address.'%')
             ->get();
     }
 
