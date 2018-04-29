@@ -9,13 +9,14 @@
 namespace App\Http\Controllers;
 
 use \Firebase\JWT\JWT;
+use Illuminate\Http\Request;
 
 class TokenController extends Controller
 {
     /**
      * Vygeneruje nový token pro JWT autorizaci.
      */
-    public function generateToken() {
+    public function generateToken(Request $request) {
         $duration = env('JWT_DURATION', 1800);
 
         // parametry jwt
@@ -28,10 +29,12 @@ class TokenController extends Controller
         $token = array(
             'iss' => $iss,
             'iat' => $iat,
-            'exp' => $exp
+            'exp' => $exp,
+            'ipaddr' => $request->ip(),
+            'user-agent' => $request->header('User-Agent')
         );
 
-        $jwt = JWT::encode($token, $key);
+        $jwt = JWT::encode($token, $key, 'HS256');
 
         return $jwt;
     }

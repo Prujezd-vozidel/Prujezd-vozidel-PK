@@ -25,9 +25,11 @@ $app->get('/', function ()  {
  * address
  * showDirection
  */
-$app->get($apiUrlRoot.'devices', 'DeviceController@getDevice');
+$app->get($apiUrlRoot.'devices', [
+    'middleware' => 'jwtauth',
+    'uses' => 'DeviceController@getDevice'
+]);
 
-//$app->get($apiUrlRoot.'devices/all', 'DeviceController@getAll');
 
 /**
  * Parametry v url:
@@ -37,17 +39,27 @@ $app->get($apiUrlRoot.'devices', 'DeviceController@getDevice');
  * timeTo
  * direction
  */
-$app->get($apiUrlRoot.'devices/{id}', 'DeviceController@getDeviceById');
+$app->get($apiUrlRoot.'devices/{id}', [
+    'middleware' => 'jwtauth',
+    'uses' => 'DeviceController@getDeviceById'
+]);
+
 
 /**
  * Vrati vsechny typy aut.
  */
-$app->get($apiUrlRoot.'vehicles', 'VehicleController@getAll');
+$app->get($apiUrlRoot.'vehicles', [
+    'middleware' => 'jwtauth',
+    'uses' => 'VehicleController@getAll'
+]);
 
 /**
  * Vrati vsechna mesta.
  */
-$app->get($apiUrlRoot.'cities', 'LocationController@getCities');
+$app->get($apiUrlRoot.'cities', [
+    'middleware' => 'jwtauth',
+    'uses' => 'LocationController@getCities'
+]);
 
 /**
  * Vygeneruje novy JWT s omezenou platnosti.
