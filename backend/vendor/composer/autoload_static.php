@@ -78,6 +78,7 @@ class ComposerStaticInit387bbed68e01e034107c67efd2fbad84
         ),
         'F' => 
         array (
+            'Firebase\\JWT\\' => 13,
             'FastRoute\\' => 10,
             'Faker\\' => 6,
         ),
@@ -255,6 +256,10 @@ class ComposerStaticInit387bbed68e01e034107c67efd2fbad84
         'Illuminate\\Auth\\' => 
         array (
             0 => __DIR__ . '/..' . '/illuminate/auth',
+        ),
+        'Firebase\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
         ),
         'FastRoute\\' => 
         array (

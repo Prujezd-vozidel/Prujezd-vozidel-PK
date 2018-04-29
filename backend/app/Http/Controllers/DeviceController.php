@@ -82,4 +82,14 @@ class DeviceController extends Controller
     public function lastDay() {
         return Zaznam::lastInsertedDate();
     }
+
+    public function headerTest(Request $request) {
+        $authHeader = $request->header("jwt");
+
+        if($authHeader != null) {
+            return $authHeader;
+        } else {
+            return $request->header("jwt");
+        }
+    }
 }

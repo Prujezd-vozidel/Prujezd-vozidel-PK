@@ -13,8 +13,11 @@
 
 $apiUrlRoot='/api/v1/';
 
+/**
+ * Welcome endpoint.
+ */
 $app->get('/', function ()  {
-    return 'Funguje to.';
+    return 'Welcome.';
 });
 
 /**
@@ -24,7 +27,7 @@ $app->get('/', function ()  {
  */
 $app->get($apiUrlRoot.'devices', 'DeviceController@getDevice');
 
-$app->get($apiUrlRoot.'devices/all', 'DeviceController@getAll');
+//$app->get($apiUrlRoot.'devices/all', 'DeviceController@getAll');
 
 /**
  * Parametry v url:
@@ -36,12 +39,22 @@ $app->get($apiUrlRoot.'devices/all', 'DeviceController@getAll');
  */
 $app->get($apiUrlRoot.'devices/{id}', 'DeviceController@getDeviceById');
 
-//$app->get($apiUrlRoot.'devices/lastday', 'DeviceController@lastDay');
-
 /**
  * Vrati vsechny typy aut.
  */
 $app->get($apiUrlRoot.'vehicles', 'VehicleController@getAll');
 
+/**
+ * Vrati vsechna mesta.
+ */
 $app->get($apiUrlRoot.'cities', 'LocationController@getCities');
 
+/**
+ * Vygeneruje novy JWT s omezenou platnosti.
+ */
+$app->get($apiUrlRoot.'token', 'TokenController@generateToken');
+
+
+
+// testovani
+$app->get($apiUrlRoot.'header', 'DeviceController@headerTest');
