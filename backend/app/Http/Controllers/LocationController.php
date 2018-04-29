@@ -18,6 +18,12 @@ class LocationController extends Controller
      * Vrati vsechna mesta.
      */
     public function getCities() {
-        return Mesto::with('zarizeni')->get();
+        $towns = Mesto::with('zarizeni')->get();
+
+        if ($towns == null || count($towns) == 0) {
+            return response('Not fonud.', 404);
+        }
+
+        return $towns;
     }
 }
