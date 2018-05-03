@@ -26,12 +26,9 @@ html, body {
     font-weight: bold;
 }
 
-#search footer {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    font-size: 0.8rem;
+.searchWrapper{
+    min-height: calc(100% - 40px);
+    float: left;
 }
 
 #graph {
@@ -46,6 +43,57 @@ html, body {
     margin: 0;
     overflow: hidden;
 }
+
+
+/* LOADING */
+.loading {
+    border: 6px solid white; /* Light grey */
+    border-top: 6px solid #007bff; /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+#loadingScreen{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #CFD8DC;
+}
+
+#loadingScreen .loading{
+    border: 12px solid white; /* Light grey */
+    border-top: 12px solid #007bff; /* Blue */
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 2s linear infinite;
+    margin: auto auto;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+
+
+
+
+
 
 
 

@@ -27,9 +27,6 @@ class DeviceController extends Controller
         }
 
         $device = Zarizeni::findByAddressJoinAddress($address);
-        if ($device == null || count($device) == 0) {
-            return response('Not found.', 404);
-        }
 
         return $device;
     }
@@ -74,12 +71,11 @@ class DeviceController extends Controller
 
         $device = Zarizeni::findByIdJoinAddress($id);
         if ($device != null) {
-            $device[0]->traffic = Zaznam::findByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
-        } else if ($device == null || count($device) == 0) {
+            $device->traffic = Zaznam::findByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
+            return json_encode($device);
+        } else {
             return response('Not found.', 404);
         }
-
-        return $device;
     }
 
     public function getAll() {

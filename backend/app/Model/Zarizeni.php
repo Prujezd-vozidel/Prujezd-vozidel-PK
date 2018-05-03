@@ -78,7 +78,7 @@ class Zarizeni extends BaseModel
             ->select('zarizeni.id as id', 'zarizeni.smer_popis as name', 'ulice.nazev as street', 'ulice.id as street_id', 'mesto.nazev as town', 'mesto.id as town_id')
             ->where('zarizeni.id', '=', $id)
             ->orderBy('zarizeni.id')
-            ->get();
+            ->first();
     }
 
     /**

@@ -18,7 +18,7 @@ class VehicleController extends Controller
      * Vrati vsechny typy vozidel.
      */
     public function getAll() {
-        $vehicles = Vozidlo::all();
+        $vehicles = Vozidlo::from('vozidlo')->select('vozidlo.id', 'vozidlo.nazev as name')->get();
 
         if ($vehicles == null || count($vehicles) == 0) {
             return response('Not found.', 404);
