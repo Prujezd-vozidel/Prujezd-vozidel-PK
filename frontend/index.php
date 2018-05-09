@@ -27,7 +27,7 @@
     <script>
         <?php
         /* JEN PRO TESTOVANI, POZDEJI SE ODSTRANIT, A NAHRADIT NASDILENOU KNIHOVNOU */
-        $base_url = 'http://localhost/pvpk/backend/public/api/v1';
+        $base_url = './../backend/public/api/v1';
 
         include_once '../backend/lib/generateToken.php';
         $token = generateToken();
@@ -44,14 +44,14 @@
 <body ng-controller="mainController" class="container-fluid">
 
 
-
-
 <div id="loadingScreen" ng-show="showLoadingScreen">
     <div class="loading"></div>
 </div>
 <div class="row h-100">
 
-    <section class="search col-12 col-sm-6 col-lg-3" id="search" ng-controller="searchController">
+    <!--SEARCH section-->
+    <section class="search col-12 col-sm-6 col-lg-3" id="search" ng-controller="searchController"
+             ng-class="{ 'col-sm-12': $root.selectDevice==null, 'col-sm-6': $root.selectDevice!=null }">
 
         <div class="w-100 searchWrapper">
             <header class="mt-2">
@@ -67,7 +67,7 @@
                     <input type="search" id="searchLocation" name="location"
                            class="form-control form-control-sm" placeholder="Město, ulice, ..."
                            ng-model="search.location" required maxlength="255" autocomplete="off"
-                           ng-change="search.location.length>2 && searchLocations(true)">
+                           ng-change="searchLocations(true)">
                 </div>
 
                 <div class="custom-control custom-checkbox mb-3">
@@ -82,7 +82,8 @@
                         <label for="searchFromDate">Období</label>
                         <input type="date" id="searchFromDate" name="fromDate"
                                class="form-control form-control-sm" ng-model="search.fromDate" required
-                               ng-class="{ 'is-invalid': search.fromDate>search.toDate}">
+                               ng-class="{ 'is-invalid': search.fromDate>search.toDate}"
+                               max="{{maxDate | date:'yyyy-MM-dd'}}">
                         <div class="invalid-feedback">
                             Tento datum musí být menší.
                         </div>
@@ -92,7 +93,8 @@
                         <label for="searchToDate" class="invisible">Období</label>
                         <input type="date" id="searchToDate" name="toDateTime"
                                class="form-control form-control-sm" ng-model="search.toDate" required
-                               ng-class="{ 'is-invalid': search.fromDate>search.toDate}">
+                               ng-class="{ 'is-invalid': search.fromDate>search.toDate}"
+                               max="{{maxDate | date:'yyyy-MM-dd'}}">
                         <div class="invalid-feedback">
                             Tento datum musí být vetší.
                         </div>
@@ -120,22 +122,19 @@
                         </div>
                     </div>
                 </div>
-
-                <!--<input type="submit" value="Vyhledat" class="btn btn-primary btn-block"-->
-                <!--ng-disabled="search.fromDate>search.toDate || search.fromTime>search.toTime">-->
             </form>
 
 
             <div class="result-locations mb-5 mt-5">
                 <h5>Lokality</h5>
 
-                <div class="list-group" ng-show="locations.length>0 && !showLocationsLoading">
+                <div class="list-group" ng-show="locations.length>0 && !showSearchLoading">
                     <!-- class = active -->
                     <a href="" id="location-{{location.id}}"
                        class="list-group-item list-group-item-action flex-column align-items-start"
                        ng-repeat="location in locations"
                        ng-click="selectDevice(location.id)"
-                       ng-class="{'active': deviceId == location.id}">
+                       ng-class="{'active': $root.selectDevice.id == location.id}">
 
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1">{{location.name}}</h6>
@@ -148,11 +147,11 @@
                     </a>
                 </div>
 
-                <div ng-show="locations.length==0 && !showLocationsLoading">
+                <div ng-show="locations.length==0 && !showSearchLoading">
                     <small class="form-text text-muted text-center">Žádná lokalita</small>
                 </div>
 
-                <div class="loading" ng-show="showLocationsLoading"></div>
+                <div class="loading" ng-show="showSearchLoading"></div>
 
             </div>
 
@@ -163,83 +162,47 @@
     </section>
 
 
-    <!--graph section-->
-    <section class="graph col-12 col-sm-6 col-lg-3" id="graph" ng-show="$root.graphShow"
-             ng-controller="graphController">
+    <!--INFO section-->
+    <section class="info col-12 col-sm-6 col-lg-3" id="info" ng-show="$root.selectDevice!=null"
+             ng-controller="infoController">
 
         <header class="mt-2">
 
-            <h4>Grafy
-                <button type="button" class="close" aria-label="Close" ng-click="$root.graphShow = !$root.graphShow">
+            <h5>{{$root.selectDevice.name}}
+                <button type="button" class="close" aria-label="Close" ng-click="infoClose()">
                     <span aria-hidden="true">&times;</span>
                 </button>
-            </h4>
+            </h5>
+            <small>
+                <address>{{$root.selectDevice.street}}, {{$root.selectDevice.town}}</address>
+            </small>
         </header>
 
-        <form>
-            <div class="form-group">
-                <label for="searchVehicle">Vozidla</label>
-                <select id="searchVehicle" class="custom-select custom-select-sm" ng-model="search.vehicle">
-                    <option value="">Všechna vozidla</option>
-                    <option ng-repeat="vehicle in vehicles" value="{{vehicle.id}}">{{vehicle.name}}</option>
-                </select>
-            </div>
+        <div class="loading" ng-show="showInfoLoading"></div>
 
-        </form>
 
-        <div class="loading"></div>
+        <h3 class="mt-5">Graf #1</h3>
 
-        <!--<canvas id="myChart" width="100%" height="60"></canvas>-->
-        <!--<script>-->
-        <!--var ctx = document.getElementById("myChart").getContext('2d');-->
-        <!--var myChart = new Chart(ctx, {-->
-        <!--type: 'bar',-->
-        <!--data: {-->
-        <!--labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],-->
-        <!--datasets: [{-->
-        <!--label: '# of Votes',-->
-        <!--data: [12, 19, 3, 5, 2, 3],-->
-        <!--backgroundColor: [-->
-        <!--'rgba(255, 99, 132, 0.2)',-->
-        <!--'rgba(54, 162, 235, 0.2)',-->
-        <!--'rgba(255, 206, 86, 0.2)',-->
-        <!--'rgba(75, 192, 192, 0.2)',-->
-        <!--'rgba(153, 102, 255, 0.2)',-->
-        <!--'rgba(255, 159, 64, 0.2)'-->
-        <!--],-->
-        <!--borderColor: [-->
-        <!--'rgba(255,99,132,1)',-->
-        <!--'rgba(54, 162, 235, 1)',-->
-        <!--'rgba(255, 206, 86, 1)',-->
-        <!--'rgba(75, 192, 192, 1)',-->
-        <!--'rgba(153, 102, 255, 1)',-->
-        <!--'rgba(255, 159, 64, 1)'-->
-        <!--],-->
-        <!--borderWidth: 1-->
-        <!--}]-->
-        <!--},-->
-        <!--options: {-->
-        <!--scales: {-->
-        <!--yAxes: [{-->
-        <!--ticks: {-->
-        <!--beginAtZero: true-->
-        <!--}-->
-        <!--}]-->
-        <!--}-->
-        <!--}-->
-        <!--});-->
-        <!--</script>-->
+        <h3 class="mt-5">Graf #2</h3>
+        <div class="form-group">
+            <label for="searchVehicle">Vozidla</label>
+            <select id="searchVehicle" class="custom-select custom-select-sm" ng-model="search.vehicle">
+                <option value="">Všechna vozidla</option>
+                <option ng-repeat="vehicle in vehicles" value="{{vehicle.id}}">{{vehicle.name}}</option>
+            </select>
+        </div>
+
+        <h3 class="mt-5">Graf #3</h3>
+
 
     </section>
 
-
-    <!--map section-->
-    <!-- ng-class="textType" -->
+    <!--MAP section-->
     <section class="map col-12 col-sm-12" id="map"
-             ng-class="{ 'col-lg-9': !$root.graphShow, 'col-lg-6': $root.graphShow }" ng-controller="mapController">
+             ng-class="{ 'col-lg-9': $root.selectDevice==null, 'col-lg-6': $root.selectDevice!=null }"
+             ng-controller="mapController">
 
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1326226.1771813703!2d11.996870042985256!3d49.51688547407959!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470abf4bb3db6569%3A0x100af0f6614a850!2zUGx6ZcWIc2vDvSBrcmFq!5e0!3m2!1scs!2scz!4v1523814169200"
-                width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen></iframe>
+
     </section>
 
 
@@ -269,6 +232,12 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
         integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
         crossorigin="anonymous"></script>
+
+<!--async defer-->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSx7hyAzQiG5uocJTeZgf1Z3lpDy4kpEk"
+        type="text/javascript"></script>
+
+<script type="text/javascript" src="./assets/libs/gmaps.min.js"></script>
 
 
 </body>
