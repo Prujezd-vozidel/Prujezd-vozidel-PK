@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-app="pvpk" class="no-js" lang="cs">
+<html ng-app="pvpk" lang="cs">
 <head>
     <meta charset="utf-8">
     <title>Průjezd vozidel - Plzeňský kraj</title>
@@ -11,18 +11,16 @@
     <link rel="apple-touch-icon" href="./assets/img/favicon.png">
     <link rel="icon" href="./assets/img/favicon.png">
 
-    <script>
-        document.documentElement.className = document.documentElement.className.replace("no-js", "js");
-    </script>
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
-          integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+          integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="./assets/css/main.css">
-
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-resource.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-sanitize.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 
     <script>
         <?php
@@ -37,16 +35,21 @@
     </script>
 
     <script src="./app.js"></script>
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 </head>
 <body ng-controller="mainController" class="container-fluid">
 
 
+
+
 <div id="loadingScreen" ng-show="showLoadingScreen">
+    <h1 id="logo">
+        <img src="./assets/img/favicon.png" alt="logo"> Průjezd vozidel
+        <small class="text-muted">Plzeňský kraj</small>
+    </h1>
     <div class="loading"></div>
+    <noscript id="pvpk_noscript">Aplikace vyžaduje Javascript. Aktivujte Javascript a znovu načtěte tuto stránku.</noscript>
 </div>
+
 <div class="row h-100">
 
     <!--SEARCH section-->
@@ -71,7 +74,6 @@
                 </div>
 
                 <div class="custom-control custom-checkbox mb-3">
-                    <!-- ng-true-value="ofCourse" ng-false-value="iWish"  -->
                     <input type="checkbox" id="searchDirection" name="searchDirection" class="custom-control-input"
                            checked ng-model="search.direction" required ng-change="searchLocations()">
                     <label for="searchDirection" class="custom-control-label">Rozlišovat směr</label>
@@ -124,12 +126,10 @@
                 </div>
             </form>
 
-
             <div class="result-locations mb-5 mt-5">
                 <h5>Lokality</h5>
 
                 <div class="list-group" ng-show="locations.length>0 && !showSearchLoading">
-                    <!-- class = active -->
                     <a href="" id="location-{{location.id}}"
                        class="list-group-item list-group-item-action flex-column align-items-start"
                        ng-repeat="location in locations"
@@ -152,9 +152,7 @@
                 </div>
 
                 <div class="loading" ng-show="showSearchLoading"></div>
-
             </div>
-
         </div>
         <footer class="text-center mb-2 mt-2 w-100">
             <small class="text-muted">2018 © FAV, ZČU</small>
@@ -167,7 +165,6 @@
              ng-controller="infoController">
 
         <header class="mt-2">
-
             <h5>{{$root.selectDevice.name}}
                 <button type="button" class="close" aria-label="Close" ng-click="infoClose()">
                     <span aria-hidden="true">&times;</span>
@@ -179,7 +176,6 @@
         </header>
 
         <div class="loading" ng-show="showInfoLoading"></div>
-
 
         <h3 class="mt-5">Graf #1</h3>
 
@@ -194,51 +190,46 @@
 
         <h3 class="mt-5">Graf #3</h3>
 
-
     </section>
+
 
     <!--MAP section-->
     <section class="map col-12 col-sm-12" id="map"
              ng-class="{ 'col-lg-9': $root.selectDevice==null, 'col-lg-6': $root.selectDevice!=null }"
              ng-controller="mapController">
-
-
     </section>
-
-
 </div>
 
-<div class="modal fade" id="modalExpiredToken" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-     aria-hidden="true">
+<div class="modal fade" id="modalError" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Platnost webové aplikace vypršela</h5>
+                <h5 class="modal-title" id="exampleModalLabel">{{modalError.title}}</h5>
             </div>
             <div class="modal-body">
-                <p>Pro obnovení platnosti stačí stisknout tlačítko <strong>Obnovit</strong>.</p>
+                <p ng-bind-html="modalError.body"></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" ng-click="reloadApp()">Obnovit</button>
+                <button type="button" class="btn btn-primary" data-dismiss="{{modalError.clickButton ? '' : 'modal'}}"
+                        ng-click="modalError.clickButton && modalError.clickButton()">{{modalError.button}}
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
-        integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
         crossorigin="anonymous"></script>
 
-<!--async defer-->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSx7hyAzQiG5uocJTeZgf1Z3lpDy4kpEk"
         type="text/javascript"></script>
 
 <script type="text/javascript" src="./assets/libs/gmaps.min.js"></script>
-
 
 </body>
 </html>

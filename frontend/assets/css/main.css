@@ -42,6 +42,7 @@ html, body {
     padding: 0;
     margin: 0;
     overflow: hidden;
+    min-height: 100%;
 }
 
 
@@ -63,10 +64,10 @@ html, body {
 
 
 #loadingScreen{
-    position: fixed;
     width: 100%;
     height: 100%;
     z-index: 1000;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -75,8 +76,8 @@ html, body {
 }
 
 #loadingScreen .loading{
-    border: 12px solid white; /* Light grey */
-    border-top: 12px solid #007bff; /* Blue */
+    border: 12px solid white;
+    border-top: 12px solid #007bff;
     border-radius: 50%;
     width: 100px;
     height: 100px;
@@ -89,9 +90,32 @@ html, body {
     right: 0;
 }
 
+#loadingScreen #logo {
+    width: 100%;
+    height: 50px;
+    position: fixed;
+    top: -160px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto 0;
+    text-align: center;
+    font-size: 1.4rem;
+}
 
-
-
+#loadingScreen #pvpk_noscript{
+    width: 100%;
+    height: 110px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto 0;
+    text-align: center;
+    font-size: 1rem;
+    background-color: #CFD8DC;
+}
 
 
 

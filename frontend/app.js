@@ -1,4 +1,4 @@
-var app = angular.module('pvpk', ['ngRoute', 'ngResource']);
+var app = angular.module('pvpk', ['ngRoute', 'ngResource', 'ngSanitize']);
 
 app.constant('config', {
     APP_NAME: 'PVPK',
@@ -42,17 +42,46 @@ app.controller('mainController', function ($rootScope, $scope, $http, $window) {
         switch (response.status) {
             case 400:
                 console.log('API ERROR 400');
+                $scope.modalError = {
+                    title: 'Neplatný požadavek',
+                    body: 'Požadavek nemůže být vyřízen, poněvadž byl syntakticky nesprávně zapsán.',
+                    button: 'OK'
+                };
+                jQuery('#modalError').modal('show');
                 break;
             case 401:
-                jQuery('#modalExpiredToken').modal('show');
+                $scope.modalError = {
+                    title: 'Platnost webové aplikace vypršela',
+                    body: 'Pro obnovení platnosti stačí stisknout tlačítko <strong>Obnovit</strong>.',
+                    button: 'Obnovit',
+                    clickButton: $scope.reloadApp
+                };
+                jQuery('#modalError').modal({backdrop: 'static', keyboard: false});
                 break;
             case 404:
                 console.log('API ERROR 404');
+                $scope.modalError = {title: 'Nenalezen', body: 'Záznam nebyl nalezen.', button: 'OK'};
+                jQuery('#modalError').modal('show');
                 break;
             case 500:
                 console.log('API ERROR 500');
+                $scope.modalError = {title: 'Chyba', body: 'Chyba serveru. Zopakujte akci později.', button: 'OK'};
+                jQuery('#modalError').modal('show');
+                break;
+            case -1:
+                console.log('API NOT CONNECTED');
+                $scope.modalError = {
+                    title: 'Připojení k internetu',
+                    body: 'Nejste připojeni k internetu. Zkontrolujte připojení.',
+                    button: 'OK'
+                };
+                jQuery('#modalError').modal('show');
                 break;
             default:
+                console.log('API UNKNOWN ERROR');
+                $scope.modalError = {title: 'Neočekávaná chyba', body: 'Nastala neočekávaná chyba.', button: 'OK'};
+                jQuery('#modalError').modal('show');
+                break;
         }
     };
 
@@ -234,7 +263,6 @@ app.controller('mapController', function ($rootScope, $scope, config, Device) {
                         lat: latlng.lat(),
                         lng: latlng.lng(),
                         title: lctn.name,
-                        label: 'U',
                         click: function (e) {
                             $rootScope.$emit('infoLocation', {id: lctn.id});
                             //alert("asdfas");
