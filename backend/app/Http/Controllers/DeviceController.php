@@ -15,18 +15,28 @@ use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
+    // nazvy moznych url parametru
+    const ADDRESS_PARAM = 'address';
+    const SHOW_DIRECTION_PARAM = 'showDirection';
+    const DATE_FROM_PARAM = 'dateFrom';
+    const DATE_TO_PARAM = 'dateTo';
+    const TIME_FROM_PARAM = 'timeFrom';
+    const TIME_FROM_TO = 'timeTo';
+    const DIRECTION_PARAM = 'direction';
+
+
     public function getDevice(Request $request) {
         $address = null;
         $showDirection=0;
-        if ($request->has('address')) {
-            $address = $request->input('address');
+        if ($request->has(ADDRESS_PARAM)) {
+            $address = $request->input(ADDRESS_PARAM);
         }
 
-        if ($request->has('showDirection')) {
-            $showDirection = ($request->input('showDirection') === 1);
+        if ($request->has(SHOW_DIRECTION_PARAM) && $request->input(SHOW_DIRECTION_PARAM) == '1') {
+            $showDirection = 1;
         }
 
-        $device = Zarizeni::findByAddressJoinAddress($address);
+        $device = Zarizeni::findByAddressJoinAddress($address, $showDirection);
         if ($device == null || count($device) == 0) {
             return response('Not found.', 404);
         }
@@ -56,20 +66,20 @@ class DeviceController extends Controller
         $direction = null;
 
         // nacti parametry
-        if ($request->has('dateFrom')) {
-            $dateFrom = $request->input('dateFrom');
+        if ($request->has(DATE_FROM_PARAM)) {
+            $dateFrom = $request->input(DATE_FROM_PARAM);
         }
-        if ($request->has('dateTo')) {
-            $dateTo = $request->input('dateTo');
+        if ($request->has(DATE_TO_PARAM)) {
+            $dateTo = $request->input(DATE_TO_PARAM);
         }
-        if ($request->has('timeFrom')) {
-            $timeFrom = $request->input('timeFrom');
+        if ($request->has(TIME_FROM_PARAM)) {
+            $timeFrom = $request->input(TIME_FROM_PARAM);
         }
-        if ($request->has('timeTo')) {
-            $timeTo = $request->input('timeTo');
+        if ($request->has(TIME_TO_PARAM)) {
+            $timeTo = $request->input(TIME_TO_PARAM);
         }
-        if ($request->has('direction')) {
-            $direction = $request->input('direction');
+        if ($request->has(DIRECTION_PARAM)) {
+            $direction = $request->input(DIRECTION_PARAM);
         }
 
         $device = Zarizeni::findByIdJoinAddress($id);
