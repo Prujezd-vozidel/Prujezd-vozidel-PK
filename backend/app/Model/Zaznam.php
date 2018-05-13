@@ -85,7 +85,9 @@ class Zaznam extends BaseModel
         // pridat grouping a razeni nakonec
         $query = $query
                 ->groupBy('timeFrom', 'timeTo', 'typeVehicleId')
-                ->orderBy('dateFrom','timeFrom', 'typeVehicleId');
+                ->orderBy('dateFrom', 'asc')
+                ->orderBy('timeFrom', 'asc')
+                ->orderBy('typeVehicleId', 'asc');
 
         return $query->get();
     }
@@ -140,6 +142,8 @@ class Zaznam extends BaseModel
         if($direction != null) {
             $query = $query->where('zaznam_cas.smer', '=', $direction);
         }
+
+        $query = $query->orderBy('datetimeFrom', 'asc');
 
         return $query->get();
     }
