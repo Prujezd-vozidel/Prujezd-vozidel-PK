@@ -21,9 +21,7 @@ $app->get('/', function ()  {
 });
 
 /**
- * Parametry v url:
- * address
- * showDirection
+ * Vrati seznam mericich zarizeni.
  */
 $app->get($apiUrlRoot.'devices', [
     'middleware' => 'jwtauth',
@@ -32,16 +30,19 @@ $app->get($apiUrlRoot.'devices', [
 
 
 /**
- * Parametry v url:
- * dateFrom
- * dateTo
- * timeFrom
- * timeTo
- * direction
+ * Vrati zaznamy o doprav e za casovy usek pro dane zarizeni.
  */
 $app->get($apiUrlRoot.'devices/{id}', [
     'middleware' => 'jwtauth',
     'uses' => 'DeviceController@getDeviceById'
+]);
+
+/**
+ * Vrati prumery dopravy pro danze zarizeni za casovy usek.
+ */
+$app->get($apiUrlRoot.'devices/{id}/time-period', [
+   'middleware' => 'jwtauth',
+    'uses' => 'DeviceController@getTrafficAverageByDevice'
 ]);
 
 

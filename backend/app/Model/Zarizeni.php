@@ -82,7 +82,12 @@ class Zarizeni extends BaseModel
         return DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
-            ->select('zarizeni.id as id', 'zarizeni.smer_popis as name', 'ulice.nazev as street', 'ulice.id as street_id', 'mesto.nazev as town', 'mesto.id as town_id')
+            ->select('zarizeni.id as id',
+                'zarizeni.smer_popis as name',
+                'ulice.nazev as street',
+                'ulice.id as street_id',
+                'mesto.nazev as town',
+                'mesto.id as town_id')
             ->where('zarizeni.id', '=', $id)
             ->orderBy('zarizeni.id')
             ->get();
