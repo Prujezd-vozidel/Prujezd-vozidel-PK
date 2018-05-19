@@ -38,6 +38,8 @@ class Zarizeni extends BaseModel
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
                 'ulice.id as street_id',
+                'ulice.lat as lat',
+                'ulice.lng as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id')
             ->get();
@@ -58,6 +60,8 @@ class Zarizeni extends BaseModel
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
                 'ulice.id as street_id',
+                'ulice.lat as lat',
+                'ulice.lng as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id')
             ->where('ulice.nazev', 'like', '%'.$address.'%')
@@ -86,6 +90,8 @@ class Zarizeni extends BaseModel
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
                 'ulice.id as street_id',
+                'ulice.lat as lat',
+                'ulice.lng as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id')
             ->where('zarizeni.id', '=', $id)
