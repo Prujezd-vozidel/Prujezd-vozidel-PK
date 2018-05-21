@@ -117,7 +117,9 @@ class DAO {
             if ($townId < 0) {
                 $query .= "('$id', '".$location->town."');";
             } else {
-                $query .= "('$id', '".$location->street."', '$townId');";
+                // Jestlize ulice v DB jeste neexistuje, nastavit geolokaci (nema smysl zem. sirku a delku zjistovat driv - nejedna se o dulezite informace pro CRON).
+                $location->setGeolocation();
+                $query .= "('$id', '".$location->street."', '$townId', '".$location->lat."', '".$location->lng."');";
             }
             
             // Vlozeni zaznamu do tabulky.
