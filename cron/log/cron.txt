@@ -1,0 +1,36 @@
+21.05.2018 21:08:55.799
+--- INFO ---
+Data k vybranemu dni jeste v databazi nejsou.
+
+21.05.2018 21:08:55.811
+--- INFO ---
+ZACATEK PROCEDURY pro den 20.05.2018.
+
+21.05.2018 21:09:01.904
+--- INFO ---
+Stazeni archivu probehlo v poradku.
+
+21.05.2018 21:09:02.588
+--- INFO ---
+Extrahovani archivu v poradku dokonceno.
+
+21.05.2018 21:09:02.598
+--- INFO ---
+Zpracovavani zaznamu o doprave.
+
+21.05.2018 21:11:08.933
+--- INFO ---
+Zpracovavani zaznamu o lokacich.
+
+21.05.2018 21:11:08.945
+--- INFO ---
+Odstranovani slozky s extrahovanymi daty.
+
+21.05.2018 21:11:08.969
+--- INFO ---
+KONEC PROCEDURY.
+
+21.05.2018 21:22:56.954
+--- WARNING ---
+Pro vybrany den (20.05.2018) jiz data v databazi jsou.
+

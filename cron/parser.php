@@ -2,6 +2,7 @@
 
 require_once "traffic.php";
 require_once "location.php";
+require_once "logging.php";
 
 class Parser {
     
@@ -26,7 +27,10 @@ class Parser {
     // Skoro to same jako $traffic, akorat bez rozmeru pro casove intervaly.
     private $trafficOneDay;
     
-    public function __construct() {
+    // Objekt pro logovani do souboru cron.txt ve slozce log.
+    private $logs;
+    
+    public function __construct($logs) {
         $this->name = "DOPR_D_";
         $this->path = "http://doprava.plzensky-kraj.cz/opendata/doprava/den/".$this->name;
         
@@ -37,9 +41,13 @@ class Parser {
         $this->intervalMilli = (int) (24 * 3600000 / $this->HOW_MANY_INTERVALS);
         $this->traffic = array();
         $this->trafficOneDay = array();
+        
+        $this->logs = $logs;
     }
     
     public function doWork($date) {
+        $this->logs->log(Logging::INFO, "ZACATEK PROCEDURY pro den ".DateTime::createFromFormat("Ymd", $date)->format("d.m.Y").".");
+        
         $zipUrl = $this->path.$date.".zip";
         $dir = "download/$date/";
         $downloaded = $dir."downloaded.zip";
@@ -54,14 +62,20 @@ class Parser {
             }
             
             if ($ok == 0 || $result == 1) {
+                $this->logs->log(Logging::INFO, "Zpracovavani zaznamu o doprave.");
                 $this->parse($dir.$this->name.$date.".csv", TRUE);
+                
+                $this->logs->log(Logging::INFO, "Zpracovavani zaznamu o lokacich.");
                 $this->parse($dir."Locations.csv", FALSE);
                 // return; odkomentovat v pripade, ze extrahovana data nemaji byt odstranena.
             }
             
+            $this->logs->log(Logging::INFO, "Odstranovani slozky s extrahovanymi daty.");
             $this->deleteDir($dir);
             
         }
+        
+        $this->logs->log(Logging::INFO, "KONEC PROCEDURY.");
     }
     
     private function parse($fileName, $traffic) {
@@ -128,21 +142,26 @@ class Parser {
                 if (mkdir($dir)) {
                     if (copy($zipUrl, $downloaded)) {
                         // Stazeni probehlo v poradku.
+                        $this->logs->log(Logging::INFO, "Stazeni archivu probehlo v poradku.");
                         return 0;
                     } else {
                         // Nepovedlo se stazeni zip souboru.
+                        $this->logs->log(Logging::ERROR, "Nepovedlo se stazeni archivu.");
                         return -1;
                     }
                 } else {
                     // Nepodarilo se vytvorit slozku pro data.
+                    $this->logs->log(Logging::ERROR, "Nepodarilo se vytvorit slozku pro data.");
                     return -2;
                 }
             } else {
                 // Data k vybranemu dni jiz byla stazena.
+                $this->logs->log(Logging::INFO, "Data k vybranemu dni jiz byla stazena.");
                 return 1;
             }
         } else {
             // Pro dany datum neexistuji data.
+            $this->logs->log(Logging::WARNING, "Pro dany datum neexistuji data.");
             return -3;
         }
     }
@@ -153,9 +172,11 @@ class Parser {
             $zip->extractTo($dir);
             $zip->close();
             // Extrahovani v poradku dokonceno.
+            $this->logs->log(Logging::INFO, "Extrahovani archivu v poradku dokonceno.");
             return 0;
         } else {
             // Nepovedlo se extrahovani obsahu zipu.
+            $this->logs->log(Logging::ERROR, "Pri extrahovani archivu doslo k chybe.");
             return -1;
         }
     }
