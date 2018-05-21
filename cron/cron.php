@@ -5,15 +5,29 @@ require_once "db/db-web.php";
 require_once "parser.php";
 require_once "process_traffic_matrix.php";
 
+function year_cron() {
+    for ($i = 365; $i > 0; $i--) {
+        $date = new DateTime();
+        $date->modify("-$i day");
+        cron_procedure($date);
+    }
+}
+
 function cron() {
+    $date = new DateTime();
+    $date->modify("-1 day");
+    cron_procedure($date);
+}
+
+function cron_procedure($date) {
+    // Kvuli timeoutu.
+    set_time_limit(0);
+    
     $dbh = new DB_WEB();
     $DAO = new DAO();
     $DAO->setDB($dbh);
     
-    $date = new DateTime();
-    $date->modify("-1 day");
-    
-    if ($DAO->controlTrafficData($date->format("Y-m-d"))) {
+    if ($date != NULL && $DAO->controlTrafficData($date->format("Y-m-d"))) {
         $parser = new Parser();
         $parser->doWork($date->format("Ymd"));
         
