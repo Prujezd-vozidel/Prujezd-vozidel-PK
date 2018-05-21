@@ -41,8 +41,8 @@ class DAO {
         return $stmt->fetchAssoc()["total"] < 1;
     }
     
-    public function insertTrafficData($insertRTT, $insertRT) {
-        for ($i = 0; $i < 2; $i++) {
+    public function insertTrafficData($insertRTT, $insertRT, $insertOneDay) {
+        for ($i = 0; $i < 3; $i++) {
             $query = "";
             $values = "";
             $counter = 0;
@@ -51,9 +51,12 @@ class DAO {
             if ($i == 0) {
                 $query = "INSERT INTO zaznam_cas VALUES ";
                 $array = &$insertRTT;
-            } else {
+            } else if ($i == 1) {
                 $query = "INSERT INTO zaznam VALUES ";
                 $array = &$insertRT;
+            } else {
+                $query = "INSERT INTO zaznam_prum_den VALUES ";
+                $array = &$insertOneDay;
             }
             
             for ($j = 0; $j < count($array); $j++) {

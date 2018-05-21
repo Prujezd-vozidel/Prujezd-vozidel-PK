@@ -23,6 +23,9 @@ class Parser {
     // prvcich (jedenact typu vozidel). Pro kazde vozidlo je vytvoreno pole o dvou prvcich (pocet vozidel, suma rychlosti).
     private $traffic;
     
+    // Skoro to same jako $traffic, akorat bez rozmeru pro casove intervaly.
+    private $trafficOneDay;
+    
     public function __construct() {
         $this->name = "DOPR_D_";
         $this->path = "http://doprava.plzensky-kraj.cz/opendata/doprava/den/".$this->name;
@@ -33,6 +36,7 @@ class Parser {
         // Naopak u zaznamu je prilis zbytecnych informaci - k predzpracovani dojit musi.
         $this->intervalMilli = (int) (24 * 3600000 / $this->HOW_MANY_INTERVALS);
         $this->traffic = array();
+        $this->trafficOneDay = array();
     }
     
     public function doWork($date) {
@@ -76,10 +80,21 @@ class Parser {
     private function saveVehicleInfo($t) {
         // Kontrola, jestli je pro dane zarizeni vytvorene pole casu.
         if (!isSet($this->traffic[$t->device])) {
+            // Vytvorit prvni dva rozmery pole pro dopravni data s rozdelenim na casove intervaly.
             $this->traffic[$t->device] = array();
             for ($i = 0; $i < $this->HOW_MANY_INTERVALS; $i++) {
                 $this->traffic[$t->device][$i] = NULL;
             }
+            
+            // U pole s prumery za cely den rovnou vytvorit vsechny rozmery.
+            $this->trafficOneDay[$t->device] = array();
+            for ($i = 0; $i < 2; $i++) {
+                $this->trafficOneDay[$t->device][$i] = array();
+                for ($j = 0; $j < 11; $j++) {
+                    $this->trafficOneDay[$t->device][$i][$j] = array(0, 0); // Pocet danych vozidel, suma jejich rychlosti.
+                }
+            }
+            
         }
         
         // Zjisteni, do jakeho casoveho intervalu patri zaznam.
@@ -101,6 +116,10 @@ class Parser {
         // Ulozeni dulezitych informaci o danem zaznamu.
         $this->traffic[$t->device][$interval][$t->direction][$t->type10][0]++;
         $this->traffic[$t->device][$interval][$t->direction][$t->type10][1] += $t->speed;
+        
+        // Ulozeni i do pole s prumery za cely den.
+        $this->trafficOneDay[$t->device][$t->direction][$t->type10][0]++;
+        $this->trafficOneDay[$t->device][$t->direction][$t->type10][1] += $t->speed;
     }
     
     private function download($date, $zipUrl, $dir, $downloaded) {
@@ -161,6 +180,10 @@ class Parser {
     
     public function getTraffic() {
         return $this->traffic;
+    }
+    
+    public function getTrafficOneDay() {
+        return $this->trafficOneDay;
     }
     
     public function getLocations() {

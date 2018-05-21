@@ -1,6 +1,6 @@
 <?php
 
-function process_traffic_matrix($parser, $traffic, $idRecordTimeTable, $idRecordTable, &$insertRTT, &$insertRT, $date) {
+function process_traffic_matrix($parser, $traffic, $trafficOneDay, $idRecordTimeTable, $idRecordTable, $idRecordOneDayTable, &$insertRTT, &$insertRT, &$insertOneDay, $date) {
     $times = array();
     
     for ($i = 0; $i < $parser->HOW_MANY_INTERVALS; $i++) {
@@ -43,6 +43,17 @@ function process_traffic_matrix($parser, $traffic, $idRecordTimeTable, $idRecord
             }
         }
     }
+    
+    foreach ($trafficOneDay as $device => $direction) {
+        for ($d = 0; $d < 2; $d++) {
+            for ($v = 0; $v < 11; $v++) {
+                if ($direction[$d][$v][0] > 0) {
+                    $insertOneDay[] = "('".$idRecordOneDayTable++."', '".$direction[$d][$v][0]."', '".($direction[$d][$v][1] / $direction[$d][$v][0])."', '$date', '".($d + 1)."', '$device', '$v')";
+                }
+            }
+        }
+    }
+    
 }
 
 ?>

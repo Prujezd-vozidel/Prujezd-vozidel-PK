@@ -18,6 +18,7 @@ function cron() {
         $parser->doWork($date->format("Ymd"));
         
         $traffic = $parser->getTraffic();
+        $trafficOneDay = $parser->getTrafficOneDay();
         $locations = $parser->getLocations();
         
         $DAO->insertVehicles(); // Pokud nejsou typy vozidel v tabulce - pridat.
@@ -30,8 +31,9 @@ function cron() {
         // Pridat zaznamy z vybraneho dne.
         $insertRTT = array();
         $insertRT = array();
-        process_traffic_matrix($parser, $traffic, $DAO->findFirstId("zaznam_cas"), $DAO->findFirstId("zaznam"), $insertRTT, $insertRT, $date->format("Y-m-d"));
-        $DAO->insertTrafficData($insertRTT, $insertRT);
+        $insertOneDay = array();
+        process_traffic_matrix($parser, $traffic, $trafficOneDay, $DAO->findFirstId("zaznam_cas"), $DAO->findFirstId("zaznam"), $DAO->findFirstId("zaznam_prum_den"), $insertRTT, $insertRT, $insertOneDay, $date->format("Y-m-d"));
+        $DAO->insertTrafficData($insertRTT, $insertRT, $insertOneDay);
     }
 }
 
