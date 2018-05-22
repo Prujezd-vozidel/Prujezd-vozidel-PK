@@ -15,16 +15,19 @@
           integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="./assets/css/main.css">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-resource.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-resource.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-sanitize.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js"></script>
+
 
     <script>
         <?php
         /* JEN PRO TESTOVANI, POZDEJI SE ODSTRANIT, A NAHRADIT NASDILENOU KNIHOVNOU */
+        //$base_url = 'http://students.kiv.zcu.cz/~valesz/index.php/api/v1';
         $base_url = './../backend/public/api/v1';
 
         include_once '../backend/lib/generateToken.php';
@@ -39,18 +42,17 @@
 <body ng-controller="mainController" class="container-fluid">
 
 
-
-
 <div id="loadingScreen" ng-show="showLoadingScreen">
     <h1 id="logo">
         <img src="./assets/img/favicon.png" alt="logo"> Průjezd vozidel
         <small class="text-muted">Plzeňský kraj</small>
     </h1>
     <div class="loading"></div>
-    <noscript id="pvpk_noscript">Aplikace vyžaduje Javascript. Aktivujte Javascript a znovu načtěte tuto stránku.</noscript>
+    <noscript id="noscript">Aplikace vyžaduje Javascript. Aktivujte Javascript a znovu načtěte tuto stránku.
+    </noscript>
 </div>
 
-<div class="row h-100">
+<div class="row h-100" ng-init="load()">
 
     <!--SEARCH section-->
     <section class="search col-12 col-sm-6 col-lg-3" id="search" ng-controller="searchController"
@@ -69,76 +71,33 @@
                     <label for="searchLocation" class="h5">Hledání - lokalit</label>
                     <input type="search" id="searchLocation" name="location"
                            class="form-control form-control-sm" placeholder="Město, ulice, ..."
-                           ng-model="search.location" required maxlength="255" autocomplete="off"
-                           ng-change="searchLocations(true)">
+                           ng-model="search.q" required maxlength="255" autocomplete="off"
+                           ng-change="searchLocations()"
+                           ng-model-options="{debounce: 600}">
                 </div>
-
                 <div class="custom-control custom-checkbox mb-3">
                     <input type="checkbox" id="searchDirection" name="searchDirection" class="custom-control-input"
-                           checked ng-model="search.direction" required ng-change="searchLocations()">
+                           checked required
+                           ng-model="search.isDirection"
+                           ng-change="searchLocations()"
+                           ng-model-options="{debounce: 600}">
                     <label for="searchDirection" class="custom-control-label">Rozlišovat směr</label>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col">
-                        <label for="searchFromDate">Období</label>
-                        <input type="date" id="searchFromDate" name="fromDate"
-                               class="form-control form-control-sm" ng-model="search.fromDate" required
-                               ng-class="{ 'is-invalid': search.fromDate>search.toDate}"
-                               max="{{maxDate | date:'yyyy-MM-dd'}}">
-                        <div class="invalid-feedback">
-                            Tento datum musí být menší.
-                        </div>
-                    </div>
-
-                    <div class="form-group col">
-                        <label for="searchToDate" class="invisible">Období</label>
-                        <input type="date" id="searchToDate" name="toDateTime"
-                               class="form-control form-control-sm" ng-model="search.toDate" required
-                               ng-class="{ 'is-invalid': search.fromDate>search.toDate}"
-                               max="{{maxDate | date:'yyyy-MM-dd'}}">
-                        <div class="invalid-feedback">
-                            Tento datum musí být vetší.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col">
-                        <label for="searchFromTime">Časové rozmezí dne</label>
-                        <input type="time" id="searchFromTime" class="form-control form-control-sm"
-                               ng-model="search.fromTime" required
-                               ng-class="{'is-invalid': search.fromTime>search.toTime}">
-                        <div class="invalid-feedback">
-                            Tento čas musí být menší.
-                        </div>
-                    </div>
-
-                    <div class="form-group col">
-                        <label for="searchToTime" class="invisible">Časové rozmezí dne</label>
-                        <input type="time" id="searchToTime" class="form-control form-control-sm"
-                               ng-model="search.toTime" required
-                               ng-class="{'is-invalid': search.fromTime>search.toTime}">
-                        <div class="invalid-feedback">
-                            Tento čas musí být vetší.
-                        </div>
-                    </div>
                 </div>
             </form>
 
-            <div class="result-locations mb-5 mt-5">
+            <div class="result-locations mb-4 mt-4">
                 <h5>Lokality</h5>
 
                 <div class="list-group" ng-show="locations.length>0 && !showSearchLoading">
                     <a href="" id="location-{{location.id}}"
                        class="list-group-item list-group-item-action flex-column align-items-start"
                        ng-repeat="location in locations"
-                       ng-click="selectDevice(location.id)"
-                       ng-class="{'active': $root.selectDevice.id == location.id}">
+                       ng-click="selectDevice(location.id,location.direction)"
+                       ng-class="{'active': $root.selectDevice.id == location.id && (!$root.selectDevice.direction  || $root.selectDevice.direction ==location.direction)}">
 
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1">{{location.name}}</h6>
-                            <small ng-show="search.direction">{{location.direction ==1 ? 'po směru': 'proti směru' }}
+                            <small ng-show="search.isDirection">{{location.direction ==1 ? 'po směru': 'proti směru' }}
                             </small>
                         </div>
                         <small>
@@ -161,41 +120,110 @@
 
 
     <!--INFO section-->
-    <section class="info col-12 col-sm-6 col-lg-3" id="info" ng-show="$root.selectDevice!=null"
+    <section class="info col-12 col-sm-6 col-lg-4" id="info" ng-show="$root.selectDevice!=null"
              ng-controller="infoController">
 
         <header class="mt-2">
-            <h5>{{$root.selectDevice.name}}
+            <h4>{{$root.selectDevice.name}}
                 <button type="button" class="close" aria-label="Close" ng-click="infoClose()">
                     <span aria-hidden="true">&times;</span>
                 </button>
-            </h5>
+            </h4>
             <small>
                 <address>{{$root.selectDevice.street}}, {{$root.selectDevice.town}}</address>
+                <span>Směr: <strong>{{$root.selectDevice.direction  ? ($root.selectDevice.direction ==1 ? 'po směru': 'proti směru') : 'po směru i proti směru'}}</strong></span>
             </small>
         </header>
 
-        <div class="loading" ng-show="showInfoLoading"></div>
+        <div class="mb-4 mt-4" ng-form="rangeForm">
+            <div class="form-row">
+                <div class="form-group col">
+                    <label for="rangeFromDate">Období</label>
+                    <input type="date" id="rangeFromDate"
+                           class="form-control form-control-sm" ng-model="range.fromDate" required
+                           ng-class="{ 'is-invalid': range.fromDate>=range.toDate}"
+                           ng-change="changeRange()"
+                           ng-model-options="{updateOn: 'default', allowInvalid: true, debounce: 600}">
+                    <div class="invalid-feedback">
+                        Tento datum musí být menší.
+                    </div>
+                </div>
 
-        <h3 class="mt-5">Graf #1</h3>
 
-        <h3 class="mt-5">Graf #2</h3>
-        <div class="form-group">
-            <label for="searchVehicle">Vozidla</label>
-            <select id="searchVehicle" class="custom-select custom-select-sm" ng-model="search.vehicle">
-                <option value="">Všechna vozidla</option>
-                <option ng-repeat="vehicle in vehicles" value="{{vehicle.id}}">{{vehicle.name}}</option>
-            </select>
+                <div class="form-group col">
+                    <label for="rangeToDate" class="invisible">Období</label>
+                    <input type="date" id="rangeToDate"
+                           class="form-control form-control-sm" ng-model="range.toDate" required
+                           ng-class="{ 'is-invalid': range.fromDate>=range.toDate}"
+                           ng-change="changeRange()"
+                           ng-model-options="{updateOn: 'default', allowInvalid: true, debounce: 600}">
+                    <div class="invalid-feedback">
+                        Tento datum musí být vetší.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col">
+                    <label for="rangehFromTime">Časové rozmezí dne</label>
+                    <input type="time" id="rangeFromTime" class="form-control form-control-sm"
+                           ng-model="range.fromTime" required
+                           ng-class="{'is-invalid': range.fromTime>=range.toTime}"
+                           ng-change="changeRange()"
+                           ng-model-options="{debounce: 600}">
+                    <div class="invalid-feedback">
+                        Tento čas musí být menší.
+                    </div>
+                </div>
+
+                <div class="form-group col">
+                    <label for="rangeToTime" class="invisible">Časové rozmezí dne</label>
+                    <input type="time" id="rangeToTime" class="form-control form-control-sm"
+                           ng-model="range.toTime" required
+                           ng-class="{'is-invalid': range.fromTime>=range.toTime}"
+                           ng-change="changeRange()"
+                           ng-model-options="{debounce: 600}">
+                    <div class="invalid-feedback">
+                        Tento čas musí být vetší.
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <h3 class="mt-5">Graf #3</h3>
+
+        <div class="loading" ng-show="showInfoLoading"></div>
+
+        <div id="graphs" ng-show="$root.selectDevice!=null && $root.selectDevice.traffics.length>0 && !showInfoLoading">
+            <h4 class="mt-4">Průměrná rychlost</h4>
+            <canvas id="graphAverageSpeed"></canvas>
+
+
+            <h4 class="mt-4">Počet vozidel</h4>
+            <form>
+                <div class="form-group">
+                    <select id="typeVehicle" class="custom-select custom-select-sm"
+                            ng-model="typeVehicle"
+                            ng-change="renderGraphNumberVehicles()"
+                            ng-options="vehicle.id as vehicle.name for vehicle in filterVehicles">
+                        <option value="">Všechna vozidla</option>
+                    </select>
+                </div>
+            </form>
+            <canvas id="graphNumberVehicles"></canvas>
+
+        </div>
+
+        <div ng-show="$root.selectDevice && $root.selectDevice.traffics.length==0 && !showInfoLoading">
+            <small class="form-text text-muted text-center">Data nejsou k dispozici</small>
+        </div>
+
 
     </section>
 
 
     <!--MAP section-->
-    <section class="map col-12 col-sm-12" id="map"
-             ng-class="{ 'col-lg-9': $root.selectDevice==null, 'col-lg-6': $root.selectDevice!=null }"
+    <section class="map col-12 col-sm-12 " id="map"
+             ng-class="{ 'col-lg-9': $root.selectDevice==null, 'col-lg-5': $root.selectDevice!=null }"
              ng-controller="mapController">
     </section>
 </div>
@@ -204,7 +232,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{{modalError.title}}</h5>
+                <h5 class="modal-title">{{modalError.title}}</h5>
             </div>
             <div class="modal-body">
                 <p ng-bind-html="modalError.body"></p>

@@ -1,4 +1,4 @@
-var app = angular.module('pvpk', ['ngRoute', 'ngResource', 'ngSanitize']);
+let app = angular.module('pvpk', ['ngRoute', 'ngResource', 'ngSanitize']);
 
 app.constant('config', {
     APP_NAME: 'PVPK',
@@ -32,13 +32,49 @@ app.constant('config', {
 // });
 
 
-app.controller('mainController', function ($rootScope, $scope, $http, $window) {
+app.controller('mainController', function ($rootScope, $scope, $location, $window) {
 
     this.$onInit = function () {
+
+    };
+
+    $window.onload = function () {
+        let params = $location.search();
+        if (params.deviceId) {
+            $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
+            $rootScope.$emit('activeMarker', {id: params.deviceId});
+        }
+
         $scope.showLoadingScreen = false;
     };
 
+    $rootScope.$on('$locationChangeSuccess', function (event, newUrl, oldUrl) {
+
+        if (newUrl !== oldUrl && $scope.historyUrl) {
+            let params = $location.search();
+
+            if ($scope.historyUrl.q !== $scope.historyUrl.q || $scope.historyUrl.isDirection != params.isDirection) {
+                $rootScope.$emit('setSearchFromUrl', null);
+            }
+
+            if ($scope.historyUrl.fromDate !== params.fromDate || $scope.historyUrl.toDate !== params.toDate ||
+                $scope.historyUrl.fromTime !== params.fromTime || $scope.historyUrl.toTime !== params.toTime) {
+                $rootScope.$emit('setRangeFromUrl', null);
+                if (params.deviceId) {
+                    $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
+                }
+            } else if (params.deviceId && ($scope.historyUrl.deviceId !== params.deviceId || $scope.historyUrl.direction !== params.direction)) {
+                $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
+                $rootScope.$emit('activeMarker', {id: params.deviceId});
+            }
+        }
+
+        $scope.historyUrl = $location.search();
+    });
+
     $rootScope.handleErrorResponse = function (response) {
+
+        let modalError = jQuery('#modalError');
         switch (response.status) {
             case 400:
                 console.log('API ERROR 400');
@@ -47,7 +83,7 @@ app.controller('mainController', function ($rootScope, $scope, $http, $window) {
                     body: 'Požadavek nemůže být vyřízen, poněvadž byl syntakticky nesprávně zapsán.',
                     button: 'OK'
                 };
-                jQuery('#modalError').modal('show');
+                modalError.modal('show');
                 break;
             case 401:
                 $scope.modalError = {
@@ -56,17 +92,17 @@ app.controller('mainController', function ($rootScope, $scope, $http, $window) {
                     button: 'Obnovit',
                     clickButton: $scope.reloadApp
                 };
-                jQuery('#modalError').modal({backdrop: 'static', keyboard: false});
+                modalError.modal({backdrop: 'static', keyboard: false});
                 break;
             case 404:
                 console.log('API ERROR 404');
                 $scope.modalError = {title: 'Nenalezen', body: 'Záznam nebyl nalezen.', button: 'OK'};
-                jQuery('#modalError').modal('show');
+                modalError.modal('show');
                 break;
             case 500:
                 console.log('API ERROR 500');
                 $scope.modalError = {title: 'Chyba', body: 'Chyba serveru. Zopakujte akci později.', button: 'OK'};
-                jQuery('#modalError').modal('show');
+                modalError.modal('show');
                 break;
             case -1:
                 console.log('API NOT CONNECTED');
@@ -75,12 +111,12 @@ app.controller('mainController', function ($rootScope, $scope, $http, $window) {
                     body: 'Nejste připojeni k internetu. Zkontrolujte připojení.',
                     button: 'OK'
                 };
-                jQuery('#modalError').modal('show');
+                modalError.modal('show');
                 break;
             default:
                 console.log('API UNKNOWN ERROR');
                 $scope.modalError = {title: 'Neočekávaná chyba', body: 'Nastala neočekávaná chyba.', button: 'OK'};
-                jQuery('#modalError').modal('show');
+                modalError.modal('show');
                 break;
         }
     };
@@ -94,71 +130,31 @@ app.controller('mainController', function ($rootScope, $scope, $http, $window) {
 app.controller('searchController', function ($rootScope, $scope, $location, config, Device) {
 
     this.$onInit = function () {
-        var fromTime = new Date();
-        fromTime.setHours(7, 0, 0, 0);
-
-        var toTime = new Date();
-        toTime.setHours(16, 0, 0, 0);
-
-
-        var toDate = new Date(new Date().getTime() - (1 * 24 * 60 * 60 * 1000));
-
-        //DODELAT OMEZENI
-        $scope.maxDate = toDate;
-        var fromDate = new Date(toDate.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-        var params = $location.search();
-
-        $scope.search = {
-            location: params.location,
-            fromDate: params.fromDate == null ? fromDate : new Date(parseInt(params.fromDate)),
-            toDate: params.toDate == null ? toDate : new Date(parseInt(params.toDate)),
-            fromTime: params.fromTime == null ? fromTime : new Date(parseInt(params.fromTime)),
-            toTime: params.toTime == null ? toTime : new Date(parseInt(params.toTime)),
-            direction: params.direction == null ? true : !!+params.direction
-        };
-
         $scope.locations = [];
         $scope.showSearchLoading = false;
 
-        if (params.location != null && params.location.length > 2) {
-            $scope.searchLocations(false);
-        }
+        $rootScope.$emit('setSearchFromUrl', null);
     };
 
-
-    $scope.searchLocations = function (saveToUrl) {
-        if (!$scope.search.location || $scope.search.location.length <= 1) {
+    $scope.searchLocations = function () {
+        if (!$scope.search.q || $scope.search.q.length <= 1) {
             $scope.locations = [];
             return;
         }
 
         $scope.showSearchLoading = true;
 
-        if (saveToUrl)
-            $location.search({
-                location: $scope.search.location,
-                // fromDate: $scope.search.fromDate.getTime(),
-                // toDate: $scope.search.toDate.getTime(),
-                // fromTime: $scope.search.fromTime.getTime(),
-                // toTime: $scope.search.toTime.getTime(),
-                direction: $scope.search.direction ? 1 : 0
-            });
+        let params = $location.search();
+        params.q = $scope.search.q;
+        params.isDirection = $scope.search.isDirection ? 1 : 0;
+        $location.search(params);
 
         Device.query({
-            address: $scope.search.location,
-            showDirection: $scope.search.direction ? 1 : 0
+            address: $scope.search.q,
+            showDirection: $scope.search.isDirection ? 1 : 0
         }, function (data) {
             $scope.locations = data;
             $scope.showSearchLoading = false;
-
-            var params = $location.search();
-            if (!saveToUrl && jQuery.grep($scope.locations, function (e) {
-                return e.id === params.deviceId;
-            }).length > 0) {
-                $scope.selectDevice(params.deviceId);
-            }
-
         }, function (response) {
             $scope.showSearchLoading = false;
             console.log('Error api all Devices');
@@ -166,24 +162,32 @@ app.controller('searchController', function ($rootScope, $scope, $location, conf
         });
     };
 
-    $scope.selectDevice = function (id) {
-        var searchObject = $location.search();
-        searchObject.deviceId = id;
-        $location.search(searchObject);
+    $rootScope.$on('setSearchFromUrl', function (event, args) {
+        let params = $location.search();
 
+        $scope.search = {
+            q: params.q,
+            isDirection: params.isDirection ? !!+params.isDirection : false
+        };
+        $scope.searchLocations();
+    });
+
+    $scope.selectDevice = function (id, direction) {
         $rootScope.$emit('activeMarker', {id: id});
-        $rootScope.$emit('infoLocation', {id: id});
+        $rootScope.$emit('infoLocation', {id: id, direction: direction});
     };
 
 });
 
 
-app.controller('infoController', function ($rootScope, $scope, config, Device, Vehicle) {
+app.controller('infoController', function ($rootScope, $scope, $location, config, Device, Vehicle) {
 
     this.$onInit = function () {
         $rootScope.selectDevice = null;
-        $scope.vehicles = [];
         $scope.showInfoLoading = false;
+        $scope.vehicles = [];
+        $scope.typeVehicle = null;
+        $scope.filterVehicles = [];
 
         Vehicle.query(null, function (data) {
             $scope.vehicles = data;
@@ -192,20 +196,47 @@ app.controller('infoController', function ($rootScope, $scope, config, Device, V
             console.log('Error api all Vehicles');
             $rootScope.handleErrorResponse(response);
         });
+
+        $rootScope.$emit('setRangeFromUrl', null);
     };
+
+    $rootScope.$on('setRangeFromUrl', function (event, args) {
+        let params = $location.search();
+        let defaultRange = $scope.defaultRange();
+
+        $scope.range = {
+            fromDate: moment(params.fromDate, 'YYYY-MM-DD').isValid() ? moment(params.fromDate).toDate() : defaultRange.fromDate.toDate(),
+            toDate: moment(params.toDate, 'YYYY-MM-DD').isValid() ? moment(params.toDate).toDate() : defaultRange.toDate.toDate(),
+            fromTime: moment(params.fromTime, 'HH:mm').isValid() ? moment(params.fromTime, 'HH:mm').toDate() : defaultRange.fromTime.toDate(),
+            toTime: moment(params.toTime, 'HH:mm').isValid() ? moment(params.toTime, 'HH:mm').toDate() : defaultRange.toTime.toDate()
+        };
+
+    });
 
     $rootScope.$on('infoLocation', function (event, args) {
         $scope.showInfoLoading = true;
 
+        let params = $location.search();
+        params.deviceId = args.id;
+        params.direction = args.direction;
+        $location.search(params);
+
+        let range = $scope.getRange();
+
         Device.get({
-            id: args.id
-            // dateFrom: $scope.search.fromDate.getTime(),
-            // dateTo: $scope.search.toDate.getTime(),
-            // timeFrom: $scope.search.fromTime.getTime(),
-            // timeTo: $scope.search.toTime.getTime(),
-            // direction: $scope.search.direction ? 1 : 0
+            id: args.id,
+            direction: args.direction,
+            dateFrom: range.fromDate.format('YYYY-MM-DD'),
+            dateTo: range.toDate.format('YYYY-MM-DD'),
+            timeFrom: range.fromTime.format('HH:mm'),
+            timeTo: range.toTime.format('HH:mm'),
         }, function (data) {
             $rootScope.selectDevice = data;
+
+            $scope.typeVehicle = null;
+            $scope.renderGraphAverageSpeed();
+            $scope.renderGraphNumberVehicles();
+
             $scope.showInfoLoading = false;
         }, function (response) {
             $rootScope.selectDevice = null;
@@ -216,8 +247,219 @@ app.controller('infoController', function ($rootScope, $scope, config, Device, V
 
     });
 
+    $scope.changeRange = function () {
+        if ($scope.range.fromDate >= $scope.range.toDate || $scope.range.fromTime >= $scope.range.toTime) {
+            $rootScope.selectDevice.traffics = [];
+            return;
+        }
+
+        let range = $scope.getRange();
+
+        let params = $location.search();
+        params.fromDate = range.fromDate.format('YYYY-MM-DD');
+        params.toDate = range.toDate.format('YYYY-MM-DD');
+        params.fromTime = range.fromTime.format('HH:mm');
+        params.toTime = range.toTime.format('HH:mm');
+        $location.search(params);
+
+        if ($rootScope.selectDevice)
+            $rootScope.$emit('infoLocation', {
+                id: $rootScope.selectDevice.id,
+                direction: $rootScope.selectDevice.direction
+            });
+    };
+
+    $scope.getRange = function () {
+        let defaultRange = $scope.defaultRange();
+
+        return {
+            fromDate: moment($scope.range.fromDate).isValid() ? moment($scope.range.fromDate) : defaultRange.fromDate,
+            toDate: moment($scope.range.toDate).isValid() ? moment($scope.range.toDate) : defaultRange.toDate,
+            fromTime: moment($scope.range.fromTime).isValid() ? moment($scope.range.fromTime) : defaultRange.fromTime,
+            toTime: moment($scope.range.toTime).isValid() ? moment($scope.range.toTime) : defaultRange.toTime
+        };
+    };
+
+    $scope.defaultRange = function () {
+        return {
+            fromDate: moment().day(-30),
+            toDate: moment().day(-1),
+            fromTime: moment({hour: 7}),
+            toTime: moment({hour: 16})
+        };
+    };
+
+
+    $scope.renderGraphAverageSpeed = function () {
+
+        let t = $rootScope.selectDevice.traffics.reduce(function (l, r) {
+            let key = r.timeFrom;
+            if (typeof l[key] === 'undefined') {
+                l[key] = {
+                    numberVehicle: 0,
+                    speedSum: 0
+                };
+            }
+
+            if (r.speedAverage > 0) {
+                l[key].numberVehicle += r.numberVehicle;
+                l[key].speedSum += r.speedAverage * r.numberVehicle;
+            }
+            return l;
+        }, {});
+
+        let labels = jQuery.unique($rootScope.selectDevice.traffics.map(function (d) {
+            return d.timeFrom;
+        }));
+        let data = Object.values(t).map(function (d) {
+            return Math.round(d.speedSum / d.numberVehicle);
+        });
+
+
+        let canvasGraphAverageSpeed = document.getElementById('graphAverageSpeed').getContext('2d');
+
+        if ($scope.graphAverageSpeed)
+            $scope.graphAverageSpeed.destroy();
+
+        $scope.graphAverageSpeed = new Chart(canvasGraphAverageSpeed, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    borderWidth: 2,
+                    label: "Rychlost",
+                    fill: 'start',
+                    backgroundColor: 'rgba(0, 123, 255, 0.3)',
+                    borderColor: 'rgba(0, 123, 255,1)',
+                    cubicInterpolationMode: 'monotone',
+                    radius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                pointDot: false,
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 15
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'km/h'
+                        },
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                tooltips: {
+                    enabled: true,
+                    mode: 'single',
+                    callbacks: {
+                        label: function (tooltipItems) {
+                            return tooltipItems.yLabel + ' km/h';
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+
+    $scope.renderGraphNumberVehicles = function () {
+        let color = ['rgba(158, 158, 158, #alpha)', 'rgba(213, 0, 0, #alpha)', 'rgba(0, 123, 255, #alpha)', 'rgba(170, 0, 255, #alpha)',
+            'rgba(0, 200, 83, #alpha)', 'rgba(255, 214, 0, #alpha)', 'rgba(255, 109, 0, #alpha)',
+            'rgba(174, 234, 0, #alpha)', 'rgba(98, 0, 234, #alpha)', 'rgba(255, 171, 0, #alpha)', 'rgba(100, 221, 23, #alpha)', 'rgba(0, 184, 212, #alpha)'];
+
+
+        let labels = jQuery.unique($rootScope.selectDevice.traffics.map(function (d) {
+            return d.timeFrom;
+        }));
+
+        let useVehiclesIds = jQuery.unique($rootScope.selectDevice.traffics.map(function (d) {
+            return d.typeVehicleId;
+        }));
+
+        $scope.filterVehicles = jQuery.grep($scope.vehicles, function (n) {
+            return useVehiclesIds.indexOf(n.id) >= 0;
+        });
+
+        let datasets = [];
+        for (let i = 0, vehicle; vehicle = $scope.filterVehicles[i]; i++) {
+            if ($scope.typeVehicle == null || $scope.typeVehicle === vehicle.id) {
+                let dataset = {
+                    label: vehicle.name,
+                    backgroundColor: color[vehicle.id].replace("#alpha", "0.3"),
+                    borderColor: color[vehicle.id].replace("#alpha", "1"),
+                    borderWidth: 2,
+                    data: []
+                };
+
+                let l = 0;
+                for (let j = 0, traffic; traffic = $rootScope.selectDevice.traffics[j]; j++) {
+                    if (labels[l] !== traffic.timeFrom) {
+                        l++;
+                        if (dataset.data.length < l) {
+                            dataset.data.push(0);
+                        }
+                    }
+                    if (traffic.typeVehicleId === vehicle.id) {
+                        dataset.data.push(traffic.numberVehicleAverage);
+                    }
+                }
+                datasets.push(dataset);
+            }
+        }
+
+        let canvasGraphNumberVehicles = document.getElementById('graphNumberVehicles').getContext('2d');
+
+        if ($scope.graphNumberVehicles)
+            $scope.graphNumberVehicles.destroy();
+
+        $scope.graphNumberVehicles = new Chart(canvasGraphNumberVehicles, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                tooltips: {
+                    mode: 'index',
+                    intersect: false
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true,
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 15
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "počet vozidel"
+                        },
+                        stacked: true
+                    }]
+                }
+            }
+        });
+    };
+
+
     $scope.infoClose = function () {
         $rootScope.selectDevice = null;
+
+        let params = $location.search();
+        params.deviceId = null;
+        params.direction = null;
+        $location.search(params);
 
         $rootScope.$emit('setDefaultMap', null);
     };
@@ -239,62 +481,52 @@ app.controller('mapController', function ($rootScope, $scope, config, Device) {
             mapTypeId: 'roadmap',
             zoom: config.DEFAULT_ZOOM,
             lat: config.DEFAULT_POSITION.LAT,
-            lng: config.DEFAULT_POSITION.LNG
+            lng: config.DEFAULT_POSITION.LNG,
+            // styles: [
+            //     {
+            //         featureType: "poi",
+            //         elementType: "labels",
+            //         stylers: [{ visibility: "off" }]
+            //     }
+            // ]
         });
 
         Device.query({showDirection: 0}, function (data) {
-            $scope.createMarkerNext(data, 0);
+            for (let i = 0, lctn; lctn = data[i]; i++) {
+                $scope.createMarker(lctn);
+            }
         }, function (response) {
             console.log('Error api all Devices');
             $rootScope.handleErrorResponse(response);
         });
     };
 
-    $scope.createMarkerNext = function (data, i) {
-        var lctn = data[i];
 
-        GMaps.geocode({
-            address: lctn.street + ', ' + lctn.town + ', Plzeňský kraj',
-            callback: function (results, status) {
-                if (status === 'OK') {
-                    latlng = results[0].geometry.location;
-
-                    var marker = $scope.map.addMarker({
-                        lat: latlng.lat(),
-                        lng: latlng.lng(),
-                        title: lctn.name,
-                        click: function (e) {
-                            $rootScope.$emit('infoLocation', {id: lctn.id});
-                            //alert("asdfas");
-                        },
-                        infoWindow: {
-                            content: '<h6 class="mb-1">' + lctn.name + '</h6>'
-                            + '<address>' + lctn.street + ', ' + lctn.town + '</address>'
-                        },
-                        id: lctn.id
-                    });
-
-                } else if (status === 'ZERO_RESULTS') {
-                    console.log('No results found address');
-                }
-
-                i++;
-                if (i < data.length) {
-                    setTimeout(function () {
-                        $scope.createMarkerNext(data, i);
-                    }, 900);
-                }
-            }
-        });
-
+    $scope.createMarker = function (lctn) {
+        if (lctn.lat && lctn.lng) {
+            $scope.map.addMarker({
+                lat: lctn.lat,
+                lng: lctn.lng,
+                title: lctn.name,
+                click: function () {
+                    $rootScope.$emit('infoLocation', {id: lctn.id});
+                },
+                infoWindow: {
+                    content: '<h6 class="mb-1">' + lctn.name + '</h6>'
+                    + '<address>' + lctn.street + ', ' + lctn.town + '</address>'
+                },
+                id: lctn.id
+            });
+        }
     };
 
     $rootScope.$on('activeMarker', function (event, args) {
-        var id = args.id;
-        for (var i = 0, marker; marker = $scope.map.markers[i]; i++) {
+        let id = args.id;
+        for (let i = 0, marker; marker = $scope.map.markers[i]; i++) {
             if (marker.id && marker.id === id && marker.infoWindow) {
                 $scope.map.setCenter(marker.position.lat(), marker.position.lng());
                 $scope.map.setZoom(12);
+                $scope.map.hideInfoWindows();
                 marker.infoWindow.open($scope.map, marker);
                 return;
             }
@@ -306,33 +538,44 @@ app.controller('mapController', function ($rootScope, $scope, config, Device) {
         $scope.map.setZoom(config.DEFAULT_ZOOM);
         $scope.map.hideInfoWindows();
     });
-
 });
 
 
-app.factory("Device", function ($resource, config) {
-    return $resource(config.API_URL + "/devices/:id", {id: '@id'}, {
+app.factory('Device', function ($resource, config) {
+    return $resource(config.API_URL + '/devices/:id', {id: '@id'}, {
         'get': {
-            url: config.API_URL + '/devices/:id',
+            url: config.API_URL + '/devices/:id/time-period',
             method: 'GET',
-            headers: {jwt: config.API_TOKEN}
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'jwt': config.API_TOKEN
+            }
         },
         'query': {
             url: config.API_URL + '/devices',
             method: 'GET',
             isArray: true,
-            headers: {jwt: config.API_TOKEN}
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'jwt': config.API_TOKEN
+            }
         }
     });
 });
 
-app.factory("Vehicle", function ($resource, config) {
-    return $resource(config.API_URL + "/vehicles", null, {
+app.factory('Vehicle', function ($resource, config) {
+    return $resource(config.API_URL + '/vehicles', null, {
         'query': {
             url: config.API_URL + '/vehicles',
             method: 'GET',
             isArray: true,
-            headers: {jwt: config.API_TOKEN}
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'jwt': config.API_TOKEN
+            }
         }
     });
 });

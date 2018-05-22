@@ -19,14 +19,13 @@ html, body {
     overflow: auto;
 }
 
-
 #search header h1 {
     line-height: 1rem;
     font-size: 1rem;
     font-weight: bold;
 }
 
-.searchWrapper{
+.searchWrapper {
     min-height: calc(100% - 40px);
     float: left;
 }
@@ -38,13 +37,16 @@ html, body {
     overflow: auto;
 }
 
+#info header address {
+    margin: 0;
+}
+
 #map {
     padding: 0;
     margin: 0;
     overflow: hidden;
     min-height: 100%;
 }
-
 
 /* LOADING */
 .loading {
@@ -58,12 +60,15 @@ html, body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-
-#loadingScreen{
+#loadingScreen {
     width: 100%;
     height: 100%;
     z-index: 1000;
@@ -75,7 +80,7 @@ html, body {
     background-color: #CFD8DC;
 }
 
-#loadingScreen .loading{
+#loadingScreen .loading {
     border: 12px solid white;
     border-top: 12px solid #007bff;
     border-radius: 50%;
@@ -103,7 +108,7 @@ html, body {
     font-size: 1.4rem;
 }
 
-#loadingScreen #pvpk_noscript{
+#loadingScreen #noscript {
     width: 100%;
     height: 110px;
     position: fixed;
@@ -117,7 +122,29 @@ html, body {
     background-color: #CFD8DC;
 }
 
+/*GRAPH */
+#graphAverageSpeed, #graphAverageSpeed{
+    width: 100% !important;
+    max-height: 575px !important;
 
+}
 
+/*SCROLLBAR*/
 
+::-webkit-scrollbar-track {
+    background-color: whitesmoke;
+}
 
+::-webkit-scrollbar {
+    width: 8px;
+    background-color: whitesmoke;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 123, 255, 0.75);
+}
+
+/*BOOTSTRAP*/
+.custom-checkbox .custom-control-label::before {
+    background-color: white;
+}
