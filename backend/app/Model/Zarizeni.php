@@ -30,7 +30,8 @@ class Zarizeni extends BaseModel
      *
      * @return mixed
      */
-    public static function getAllJoinAddress() {
+    public static function getAllJoinAddress()
+    {
         return DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
@@ -52,10 +53,12 @@ class Zarizeni extends BaseModel
      * @param $showDirection 1 pokud má být rozlišen směr zařízení.
      * @return mixed
      */
-    public static function findByAddressJoinAddress($address, $showDirection) {
+    public static function findByAddressJoinAddress($address, $showDirection)
+    {
         $query = DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
+            ->join('zaznam_cas', 'zaznam_cas.zarizeni_id', '=', 'zarizeni.id')
             ->select('zarizeni.id as id',
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
@@ -63,12 +66,16 @@ class Zarizeni extends BaseModel
                 'ulice.lat as lat',
                 'ulice.lng as lng',
                 'mesto.nazev as town',
-                'mesto.id as town_id')
-            ->where('ulice.nazev', 'like', '%'.$address.'%')
-            ->orWhere('mesto.nazev', 'like', '%'.$address.'%');
+                'mesto.id as town_id',
+                $showDirection ? 'zaznam_cas.smer as direction' : DB::Raw('0 as direction'))
+            ->where('ulice.nazev', 'like', '%' . $address . '%')
+            ->orWhere('mesto.nazev', 'like', '%' . $address . '%')
+            ->orWhere('zarizeni.smer_popis', 'like', '%' . $address . '%');
 
         if (!$showDirection) {
-            $query = $query->groupBy('zarizeni.ulice_id');
+            $query = $query->groupBy('zarizeni.id');
+        } else {
+            $query = $query->groupBy('zarizeni.id', 'zaznam_cas.smer');
         }
 
 
@@ -82,7 +89,8 @@ class Zarizeni extends BaseModel
      * @param $id Id zarizeni.
      * @return mixed
      */
-    public static function findByIdJoinAddress($id) {
+    public static function findByIdJoinAddress($id)
+    {
         return DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
@@ -120,7 +128,8 @@ class Zarizeni extends BaseModel
      */
     public $stav;
 
-    public function ulice() {
+    public function ulice()
+    {
         return $this->belongsTo('App\Model\Ulice');
     }
 }

@@ -25,9 +25,10 @@ class DeviceController extends Controller
     const DIRECTION_PARAM = 'direction';
 
 
-    public function getDevice(Request $request) {
+    public function getDevice(Request $request)
+    {
         $address = null;
-        $showDirection=0;
+        $showDirection = 0;
         if ($request->has(self::ADDRESS_PARAM)) {
             $address = $request->input(self::ADDRESS_PARAM);
         }
@@ -54,7 +55,8 @@ class DeviceController extends Controller
      * @param $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getDeviceById(Request $request, $id) {
+    public function getDeviceById(Request $request, $id)
+    {
 
         // nacti parametry
         $params = $this->loadDateTimeDirectionConstraints($request);
@@ -66,14 +68,15 @@ class DeviceController extends Controller
 
         $device = Zarizeni::findByIdJoinAddress($id);
         if ($device != null) {
-            $device->traffic = Zaznam::findByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
+            $device->traffics = Zaznam::findByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
             return json_encode($device);
         } else {
             return response('Not found.', 404);
         }
     }
 
-    public function getTrafficAverageByDevice(Request $request, $id) {
+    public function getTrafficAverageByDevice(Request $request, $id)
+    {
         // nacti parametry
         $params = $this->loadDateTimeDirectionConstraints($request);
         $dateFrom = $params[self::DATE_FROM_PARAM];
@@ -84,26 +87,35 @@ class DeviceController extends Controller
 
         $device = Zarizeni::findByIdJoinAddress($id);
         if ($device != null) {
-            $device[0]->traffic = Zaznam::averageByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
-        } else if ($device == null || count($device) == 0) {
+            $device->dateFrom = $dateFrom;
+            $device->dateTo = $dateTo;
+
+            if ($direction != null) {
+                $device->direction = intval($direction);
+            }
+
+            $device->traffics = Zaznam::averageByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
+            return json_encode($device);
+        } else {
             return response('Not found.', 404);
         }
-
-        return $device;
     }
 
-    public function getAll() {
+    public function getAll()
+    {
         return Zarizeni::getAllJoinAddress();
     }
 
-    public function lastDay() {
+    public function lastDay()
+    {
         return Zaznam::lastInsertedDate();
     }
 
-    public function headerTest(Request $request) {
+    public function headerTest(Request $request)
+    {
         $authHeader = $request->header("jwt");
 
-        if($authHeader != null) {
+        if ($authHeader != null) {
             return $authHeader;
         } else {
             return $request->header("jwt");
@@ -116,7 +128,8 @@ class DeviceController extends Controller
      *
      * @param Request $request Request ze ktere budou nacitany parametry.
      */
-    private function loadDateTimeDirectionConstraints(Request $request) {
+    private function loadDateTimeDirectionConstraints(Request $request)
+    {
         $params = array();
         $params[self::DATE_FROM_PARAM] = null;
         $params[self::DATE_TO_PARAM] = null;
