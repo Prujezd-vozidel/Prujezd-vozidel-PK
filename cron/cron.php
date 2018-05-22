@@ -51,11 +51,12 @@ function cron_procedure($date) {
         }
         
         // Pridat zaznamy z vybraneho dne.
+        $insertDate = array();
         $insertRTT = array();
         $insertRT = array();
         $insertOneDay = array();
-        process_traffic_matrix($parser, $traffic, $trafficOneDay, $DAO->findFirstId("zaznam_cas"), $DAO->findFirstId("zaznam"), $DAO->findFirstId("zaznam_prum_den"), $insertRTT, $insertRT, $insertOneDay, $date->format("Y-m-d"));
-        $DAO->insertTrafficData($insertRTT, $insertRT, $insertOneDay);
+        process_traffic_matrix($parser, $traffic, $trafficOneDay, $DAO->findFirstId("datum"), $DAO->findFirstId("zaznam_cas"), $DAO->findFirstId("zaznam"), $DAO->findFirstId("zaznam_prum_den"), $insertDate, $insertRTT, $insertRT, $insertOneDay, $date->format("Y-m-d"));
+        $DAO->insertTrafficData($insertDate, $insertRTT, $insertRT, $insertOneDay);
     } else if ($date != NULL) {
         // Data pro vybrany den uz v databazi jsou.
         $logs->log(Logging::WARNING, "Pro vybrany den (".$date->format("d.m.Y").") jiz data v databazi jsou.");

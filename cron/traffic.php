@@ -27,12 +27,12 @@ class Traffic {
         // $this->intensity = $data[2];
         // $this->intensityN = $data[3];
         // $this->occupancy = $data[4];
-        $this->speed = $data[5];
-        $this->state = $data[6];
+        $this->speed = (double) $data[5];
+        $this->state = (int) $data[6];
         // $this->type = $data[7];
         // $this->duration = $data[8];
         // $this->history = $data[9];
-        $this->type10 = $data[10];
+        $this->type10 = (int) $data[10];
     }
     
 }

@@ -12,12 +12,12 @@ class DAO {
     }
     
     public function insertVehicles() {
-        $query = "SELECT COUNT(*) AS total FROM vozidla";
+        $query = "SELECT COUNT(*) AS total FROM vozidlo";
         $stmt = $this->dbh->executeQuery($query);
         
         if ($stmt->fetchAssoc()["total"] < 1) {
-            // Pokud v tabulce s vozidlama neni zadny zaznam, pridat vsechny moznosti.
-            $query = "INSERT INTO vozidla (id, nazev) VALUES ";
+            // Pokud v tabulce s vozidly neni zadny zaznam, pridat vsechny moznosti.
+            $query = "INSERT INTO vozidlo (id, nazev) VALUES ";
             $query .= "('0', 'Neznámé vozidlo'), ";
             $query .= "('1', 'Motocykl'), ";
             $query .= "('2', 'Auto'), ";
@@ -36,22 +36,25 @@ class DAO {
     public function controlTrafficData($dateStr) {
         $dateTo = new DateTime($dateStr);
         $dateTo->modify("+1 day");
-        $query = "SELECT COUNT(*) AS total FROM zaznam_cas WHERE datetime_od >= '$dateStr' AND datetime_od < '".$dateTo->format('Y-m-d')."';";
+        $query = "SELECT COUNT(*) AS total FROM datum WHERE od >= '$dateStr' AND od < '".$dateTo->format('Y-m-d')."';";
         $stmt = $this->dbh->executeQuery($query);
         return $stmt->fetchAssoc()["total"] < 1;
     }
     
-    public function insertTrafficData($insertRTT, $insertRT, $insertOneDay) {
-        for ($i = 0; $i < 3; $i++) {
+    public function insertTrafficData($insertDate, $insertRTT, $insertRT, $insertOneDay) {
+        for ($i = 0; $i < 4; $i++) {
             $query = "";
             $values = "";
             $counter = 0;
             $array = NULL;
             
             if ($i == 0) {
+                $query = "INSERT INTO datum VALUES ";
+                $array = &$insertDate;
+            } else if ($i == 1) {
                 $query = "INSERT INTO zaznam_cas VALUES ";
                 $array = &$insertRTT;
-            } else if ($i == 1) {
+            } else if ($i == 2) {
                 $query = "INSERT INTO zaznam VALUES ";
                 $array = &$insertRT;
             } else {
@@ -62,7 +65,7 @@ class DAO {
             for ($j = 0; $j < count($array); $j++) {
                 $values .= $array[$j].", ";
                 $counter++;
-                if ($counter == 500 || $j == (count($array) - 1)) {
+                if ($counter == 1000 || $j == (count($array) - 1)) {
                     $query_ = $query.substr($values, 0, strlen($values) - 2).";";
                     $stmt = $this->dbh->executeQuery($query_);
                     

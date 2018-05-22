@@ -105,7 +105,7 @@ class Parser {
             for ($i = 0; $i < 2; $i++) {
                 $this->trafficOneDay[$t->device][$i] = array();
                 for ($j = 0; $j < 11; $j++) {
-                    $this->trafficOneDay[$t->device][$i][$j] = array(0, 0); // Pocet danych vozidel, suma jejich rychlosti.
+                    $this->trafficOneDay[$t->device][$i][$j] = array(0, 0, 0); // Pocet danych vozidel, suma jejich rychlosti a pocet vozidel u kterych nesla stanovit rychlost.
                 }
             }
             
@@ -122,18 +122,21 @@ class Parser {
             for ($i = 0; $i < 2; $i++) {
                 $this->traffic[$t->device][$interval][$i] = array();
                 for ($j = 0; $j < 11; $j++) {
-                    $this->traffic[$t->device][$interval][$i][$j] = array(0, 0); // Pocet danych vozidel, suma jejich rychlosti.
+                    $this->traffic[$t->device][$interval][$i][$j] = array(0, 0, 0); // Pocet danych vozidel, suma jejich rychlosti a pocet vozidel u kterych nesla stanovit rychlost.
                 }
             }
         }
         
-        // Ulozeni dulezitych informaci o danem zaznamu.
-        $this->traffic[$t->device][$interval][$t->direction][$t->type10][0]++;
-        $this->traffic[$t->device][$interval][$t->direction][$t->type10][1] += $t->speed;
-        
-        // Ulozeni i do pole s prumery za cely den.
-        $this->trafficOneDay[$t->device][$t->direction][$t->type10][0]++;
-        $this->trafficOneDay[$t->device][$t->direction][$t->type10][1] += $t->speed;
+        // Ulozeni dulezitych informaci o danem zaznamu do pole s casovymi intervaly a i do pole se zaznamy za cely den.
+        if ($t->speed < 1) {
+            $this->traffic[$t->device][$interval][$t->direction][$t->type10][2]++;
+            $this->trafficOneDay[$t->device][$t->direction][$t->type10][2]++;
+        } else {
+            $this->traffic[$t->device][$interval][$t->direction][$t->type10][0]++;
+            $this->traffic[$t->device][$interval][$t->direction][$t->type10][1] += $t->speed;
+            $this->trafficOneDay[$t->device][$t->direction][$t->type10][0]++;
+            $this->trafficOneDay[$t->device][$t->direction][$t->type10][1] += $t->speed;
+        }
     }
     
     private function download($date, $zipUrl, $dir, $downloaded) {
