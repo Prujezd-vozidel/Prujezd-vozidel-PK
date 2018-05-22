@@ -66,6 +66,9 @@ app.controller('mainController', function ($rootScope, $scope, $location, $windo
             } else if (params.deviceId && ($scope.historyUrl.deviceId !== params.deviceId || $scope.historyUrl.direction !== params.direction)) {
                 $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
                 $rootScope.$emit('activeMarker', {id: params.deviceId});
+            }else if(!params.deviceId && $scope.historyUrl.deviceId){
+                $rootScope.selectDevice = null;
+                $rootScope.$emit('setDefaultMap', null);
             }
         }
 

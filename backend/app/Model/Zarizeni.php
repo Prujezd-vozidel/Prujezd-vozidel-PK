@@ -67,7 +67,7 @@ class Zarizeni extends BaseModel
                 'ulice.lng as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id',
-                $showDirection ? 'zaznam_cas.smer as direction' : DB::Raw('0 as direction'))
+                $showDirection ? 'zaznam_cas.smer as direction' : DB::Raw('null as direction'))
             ->where('ulice.nazev', 'like', '%' . $address . '%')
             ->orWhere('mesto.nazev', 'like', '%' . $address . '%')
             ->orWhere('zarizeni.smer_popis', 'like', '%' . $address . '%');
