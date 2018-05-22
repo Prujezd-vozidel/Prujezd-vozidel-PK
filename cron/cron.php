@@ -26,13 +26,13 @@ function cron_procedure($date) {
     // Kvuli timeoutu.
     set_time_limit(0);
     
-    // Vytvoreni objektu pro komunikaci s DB.
-    $dbh = new DB_WEB();
-    $DAO = new DAO();
-    $DAO->setDB($dbh);
-    
     // Objekt pro logovani.
     $logs = new Logging();
+    
+    // Vytvoreni objektu pro komunikaci s DB.
+    $dbh = new DB_WEB($logs);
+    $DAO = new DAO();
+    $DAO->setDB($dbh);
     
     if ($date != NULL && $DAO->controlTrafficData($date->format("Y-m-d"))) {
         $logs->log(Logging::INFO, "Data k vybranemu dni (".$date->format("d.m.Y").") jeste v databazi nejsou.");
