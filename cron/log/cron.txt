@@ -1,0 +1,62 @@
+22.05.2018 23:30:19.506
+--- INFO ---
+Data k vybranemu dni (21.05.2018) jeste v databazi nejsou.
+
+22.05.2018 23:30:19.518
+--- INFO ---
+ZACATEK PROCEDURY pro den 21.05.2018.
+
+22.05.2018 23:30:25.832
+--- INFO ---
+Stazeni archivu probehlo v poradku.
+
+22.05.2018 23:30:26.887
+--- INFO ---
+Extrahovani archivu v poradku dokonceno.
+
+22.05.2018 23:30:26.897
+--- INFO ---
+Zpracovavani zaznamu o doprave.
+
+22.05.2018 23:33:56.540
+--- INFO ---
+Zpracovavani zaznamu o lokacich.
+
+22.05.2018 23:33:56.552
+--- INFO ---
+Odstranovani slozky s extrahovanymi daty.
+
+22.05.2018 23:33:56.584
+--- INFO ---
+KONEC PROCEDURY.
+
+22.05.2018 23:51:45.080
+--- WARNING ---
+Pro vybrany den (21.05.2018) jiz data v databazi jsou.
+
+23.05.2018 00:02:20.633
+--- INFO ---
+Data k vybranemu dni (22.05.2018) jeste v databazi nejsou.
+
+23.05.2018 00:02:20.644
+--- INFO ---
+ZACATEK PROCEDURY pro den 22.05.2018.
+
+23.05.2018 00:02:21.236
+--- WARNING ---
+Pro dany datum neexistuji data.
+
+23.05.2018 00:02:21.248
+--- INFO ---
+KONEC PROCEDURY.
+
+23.05.2018 00:10:05.350
+--- ERROR ---
+exception 'DB_Exception' in C:\Program Files (x86)\EasyPHP-12.1\www\cron\db\db-pdo.php:35
+Stack trace:
+#0 C:\Program Files (x86)\EasyPHP-12.1\www\cron\dao\dao.php(40): DB_PDO->executeQuery('SELECT COUNT(*)...')
+#1 C:\Program Files (x86)\EasyPHP-12.1\www\cron\cron.php(37): DAO->controlTrafficData('2018-05-21')
+#2 C:\Program Files (x86)\EasyPHP-12.1\www\cron\cron.php(21): cron_procedure(Object(DateTime))
+#3 C:\Program Files (x86)\EasyPHP-12.1\www\cron\index.php(9): cron()
+#4 {main}
+
