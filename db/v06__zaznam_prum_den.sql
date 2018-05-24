@@ -10,15 +10,15 @@ CREATE TABLE IF NOT EXISTS `zaznam_prum_den` (
   `datum` date NOT NULL,
   `smer` int(11) NOT NULL,
   `zarizeni_id` varchar(20) NOT NULL,
-  `vozidla_id` bigint(20) NOT NULL,
+  `vozidlo_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `zarizeni_id` (`zarizeni_id`),
-  KEY `vozidla_id` (`vozidla_id`)
+  KEY `vozidlo_id` (`vozidlo_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --
 -- Omezení pro tabulku `zaznam_prum_den`
 --
 ALTER TABLE `zaznam_prum_den`
-  ADD CONSTRAINT `zaznam_prum_den_ibfk_2` FOREIGN KEY (`vozidla_id`) REFERENCES `vozidla` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `zaznam_prum_den_ibfk_2` FOREIGN KEY (`vozidlo_id`) REFERENCES `vozidlo` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `zaznam_prum_den_ibfk_1` FOREIGN KEY (`zarizeni_id`) REFERENCES `zarizeni` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;

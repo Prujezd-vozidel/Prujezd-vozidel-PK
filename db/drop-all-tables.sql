@@ -1,0 +1,10 @@
+set foreign_key_checks=0;
+drop table if exists mesto;
+drop table if exists ulice;
+drop table if exists zarizeni;
+drop table if exists zaznam_cas;
+drop table if exists zaznam;
+drop table if exists zaznam_prum_den;
+drop table if exists vozidlo;
+drop table if exists vozidla;
+set foreign_key_checks=1;
