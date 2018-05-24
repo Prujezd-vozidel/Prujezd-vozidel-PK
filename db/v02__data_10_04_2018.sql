@@ -16,12 +16,6 @@ SET FOREIGN_KEY_CHECKS=0;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
 
---
--- Databáze: `prujezd_vozidel`
---
-
--- --------------------------------------------------------
-
 
 --
 -- Vypisuji data pro tabulku `mesto`
