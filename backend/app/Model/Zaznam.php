@@ -79,8 +79,8 @@ class Zaznam extends BaseModel
 
         // pridat grouping a razeni nakonec
         $query = $query
-            ->groupBy('zaznam_cas.datetime_od', 'zaznam.vozidlo_id')
-            ->orderBy('zaznam_cas.datetime_od', 'asc')
+            ->groupBy('datum.od', 'zaznam.vozidlo_id')
+            ->orderBy('datum.od', 'asc')
             ->orderBy('zaznam.vozidlo_id', 'asc');
 
         return $query->get();

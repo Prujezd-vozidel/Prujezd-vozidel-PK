@@ -8,6 +8,8 @@
 
 namespace App\Model;
 
+use Illuminate\Support\Facades\DB;
+
 
 /**
  * Trida reprezentujici entitu vozidlo.
