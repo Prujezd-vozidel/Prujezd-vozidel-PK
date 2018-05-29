@@ -39,8 +39,8 @@ class Zarizeni extends BaseModel
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
                 'ulice.id as street_id',
-                'ulice.lat as lat',
-                'ulice.lng as lng',
+                'ulice.zem_sirka as lat',
+                'ulice.zem_delka as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id')
             ->get();
@@ -63,11 +63,11 @@ class Zarizeni extends BaseModel
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
                 'ulice.id as street_id',
-                'ulice.lat as lat',
-                'ulice.lng as lng',
+                'ulice.zem_sirka as lat',
+                'ulice.zem_delka as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id',
-                $showDirection ? 'zaznam_cas.smer as direction' : DB::Raw('null as direction'))
+                $showDirection ? 'zaznam_cas.smer as direction' : DB::Raw('0 as direction'))
             ->where('ulice.nazev', 'like', '%' . $address . '%')
             ->orWhere('mesto.nazev', 'like', '%' . $address . '%')
             ->orWhere('zarizeni.smer_popis', 'like', '%' . $address . '%');
@@ -98,8 +98,8 @@ class Zarizeni extends BaseModel
                 'zarizeni.smer_popis as name',
                 'ulice.nazev as street',
                 'ulice.id as street_id',
-                'ulice.lat as lat',
-                'ulice.lng as lng',
+                'ulice.zem_sirka as lat',
+                'ulice.zem_delka as lng',
                 'mesto.nazev as town',
                 'mesto.id as town_id')
             ->where('zarizeni.id', '=', $id)

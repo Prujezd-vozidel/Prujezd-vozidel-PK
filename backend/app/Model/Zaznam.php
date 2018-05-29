@@ -25,7 +25,7 @@ class Zaznam extends BaseModel
      */
     public static function lastInsertedDate()
     {
-        return DB::table('zaznam_cas')->select(DB::raw('max(date(datetime_od)) as last_day'))->get();
+        return DB::table('datum')->select(DB::raw('max(date(od)) as last_day'))->get();
     }
 
     /**
@@ -58,18 +58,19 @@ class Zaznam extends BaseModel
         // vytvoreni query - vsechno to dat dohromady
         $query = DB::table('zaznam_cas')
             ->join('zaznam', 'zaznam.zaznam_cas_id', '=', 'zaznam_cas.id')
+            ->join('datum', 'zaznam_cas.datum_id', '=', 'datum.id')
             ->select(DB::raw("
-                date_format(zaznam_cas.datetime_od, '%H:%i') as timeFrom,
-                date_format(zaznam_cas.datetime_do, '%H:%i') as timeTo,
+                date_format(datum.od, '%H:%i') as timeFrom,
+                date_format(datum.do, '%H:%i') as timeTo,
                 ROUND(avg(zaznam.rychlost_prumer),0) as speedAverage,
                 CAST(sum(zaznam.vozidla_pocet) as UNSIGNED) as numberVehicle,
                 ROUND(avg(zaznam.vozidla_pocet),0) as numberVehicleAverage,
                 zaznam.vozidlo_id as typeVehicleId
             "))
-            ->whereDate('zaznam_cas.datetime_od', '>=', $dateFrom == null ? $lastDate : $dateFrom)
-            ->whereDate('zaznam_cas.datetime_do', '<=', $dateTo == null ? $lastDate : $dateTo)
-            ->whereTime('zaznam_cas.datetime_od', '>=', $timeFrom == null ? '08:00:00' : $timeFrom)
-            ->whereTime('zaznam_cas.datetime_od', '<=', $timeTo == null ? '23:59:59' : $timeTo)
+            ->whereDate('datum.od', '>=', $dateFrom == null ? $lastDate : $dateFrom)
+            ->whereDate('datum.do', '<=', $dateTo == null ? $lastDate : $dateTo)
+            ->whereTime('datum.od', '>=', $timeFrom == null ? '08:00:00' : $timeFrom)
+            ->whereTime('datum.do', '<=', $timeTo == null ? '23:59:59' : $timeTo)
             ->where('zaznam_cas.zarizeni_id', '=', $deviceId);
 
         if ($direction != null) {
@@ -122,15 +123,17 @@ class Zaznam extends BaseModel
         $query = DB::table('zaznam')
             ->join('zaznam_cas', 'zaznam.zaznam_cas_id', '=', 'zaznam_cas.id')
             ->join('vozidlo', 'zaznam.vozidlo_id', '=', 'vozidlo.id')
-            ->select('zaznam_cas.datetime_od as datetimeFrom',
-                'zaznam_cas.datetime_do as datetimeTo',
+            ->join('datum', 'zaznam_cas.datum_id', '=', 'datum.id')
+            ->select(
+                'datum.od as datetimeFrom',
+                'datum.do as datetimeTo',
                 'zaznam_cas.smer as direction',
                 'zaznam.rychlost_prumer as speedAverage',
                 'zaznam.vozidla_pocet as numberVehicle',
                 'vozidlo.nazev as typeVehicle',
                 'vozidlo.id as typeVehicleId')
-            ->where('zaznam_cas.datetime_od', '>=', $dateTimeFrom)
-            ->where('zaznam_cas.datetime_do', '<=', $dateTimeTo)
+            ->where('datum.od', '>=', $dateTimeFrom)
+            ->where('datum.do', '<=', $dateTimeTo)
             ->where('zaznam_cas.zarizeni_id', '=', $deviceId);
 
         if ($direction != null) {

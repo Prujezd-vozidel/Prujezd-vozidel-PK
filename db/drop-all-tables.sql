@@ -7,4 +7,5 @@ drop table if exists zaznam;
 drop table if exists zaznam_prum_den;
 drop table if exists vozidlo;
 drop table if exists vozidla;
+drop table if exists datum;
 set foreign_key_checks=1;

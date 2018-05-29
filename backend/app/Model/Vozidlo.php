@@ -21,4 +21,10 @@ class Vozidlo extends BaseModel
      * @var string
      */
     protected $table = 'vozidlo';
+
+    public static function getAll() {
+        return DB::table('vozidlo')
+            ->select('vozidlo.id', 'vozidlo.nazev as name')
+            ->get();
+    }
 }
