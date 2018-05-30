@@ -70,7 +70,7 @@ class Zaznam extends BaseModel
             ->whereDate('datum.od', '>=', $dateFrom == null ? $lastDate : $dateFrom)
             ->whereDate('datum.do', '<=', $dateTo == null ? $lastDate : $dateTo)
             ->whereTime('datum.od', '>=', $timeFrom == null ? '08:00:00' : $timeFrom)
-            ->whereTime('datum.do', '<=', $timeTo == null ? '23:59:59' : $timeTo)
+            ->whereTime('datum.od', '<=', $timeTo == null ? '23:59:59' : $timeTo)
             ->where('zaznam_cas.zarizeni_id', '=', $deviceId);
 
         if ($direction != null) {
