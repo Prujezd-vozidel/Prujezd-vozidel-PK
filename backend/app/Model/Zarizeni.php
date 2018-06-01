@@ -55,6 +55,10 @@ class Zarizeni extends BaseModel
      */
     public static function findByAddressJoinAddress($address, $showDirection)
     {
+        if (empty($address)) {
+            Zarizeni::getAllJoinAddress();
+        }
+
         $query = DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
