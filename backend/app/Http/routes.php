@@ -24,7 +24,7 @@ $app->get('/', function ()  {
  * Vrati seznam mericich zarizeni.
  */
 $app->get($apiUrlRoot.'devices', [
-    'middleware' => 'jwtauth',
+    'middleware' => ['cors', 'jwtauth'],
     'uses' => 'DeviceController@getDevice'
 ]);
 
@@ -33,15 +33,20 @@ $app->get($apiUrlRoot.'devices', [
  * Vrati zaznamy o doprav e za casovy usek pro dane zarizeni.
  */
 $app->get($apiUrlRoot.'devices/{id}', [
+    'middleware' => ['cors', 'jwtauth'],
+    'uses' => 'DeviceController@getDeviceByIdWithTraffic'
+]);
+
+$app->get($apiUrlRoot.'devices/{id}/csv', [
     'middleware' => 'jwtauth',
-    'uses' => 'DeviceController@getDeviceById'
+    'uses' => 'DeviceController@getDeviceByIdAsCsv'
 ]);
 
 /**
  * Vrati prumery dopravy pro danze zarizeni za casovy usek.
  */
 $app->get($apiUrlRoot.'devices/{id}/time-period', [
-   'middleware' => 'jwtauth',
+    'middleware' => ['cors', 'jwtauth'],
     'uses' => 'DeviceController@getTrafficAverageByDevice'
 ]);
 
@@ -50,7 +55,7 @@ $app->get($apiUrlRoot.'devices/{id}/time-period', [
  * Vrati vsechny typy aut.
  */
 $app->get($apiUrlRoot.'vehicles', [
-    'middleware' => 'jwtauth',
+    'middleware' => ['cors', 'jwtauth'],
     'uses' => 'VehicleController@getAll'
 ]);
 
@@ -58,7 +63,7 @@ $app->get($apiUrlRoot.'vehicles', [
  * Vrati vsechna mesta.
  */
 $app->get($apiUrlRoot.'cities', [
-    'middleware' => 'jwtauth',
+    'middleware' => ['cors', 'jwtauth'],
     'uses' => 'LocationController@getCities'
 ]);
 

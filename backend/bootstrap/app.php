@@ -61,14 +61,14 @@ $app->singleton(
 
 $app->routeMiddleware([
     'jwtauth' => App\Http\Middleware\JWTAuthenticate::class,
+    'cors' => App\Http\Middleware\CorsMiddleware::class
 ]);
 
 /**
  * Cors middleware, ktery zpracuje OPTION requesty.
  */
-$app->middleware([
-App\Http\Middleware\CorsMiddleware::class
-]);
+//$app->middleware([
+//]);
 
 // $app->routeMiddleware([
 //     'auth' => App\Http\Middleware\Authenticate::class,

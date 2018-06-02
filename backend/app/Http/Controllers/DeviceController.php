@@ -12,6 +12,8 @@ use App\Model\Device;
 use App\Model\Zarizeni;
 use App\Model\Zaznam;
 use Illuminate\Http\Request;
+use phpDocumentor\Reflection\Types\Array_;
+use phpDocumentor\Reflection\Types\Mixed_;
 
 class DeviceController extends Controller
 {
@@ -55,9 +57,34 @@ class DeviceController extends Controller
      * @param $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getDeviceById(Request $request, $id)
+    public function getDeviceByIdWithTraffic(Request $request, $id)
     {
+        $device = $this->getDeviceById($id);
+        if ($device != null) {
+            $device->traffics = $this->findTrafficByDevice($request, $id);
+            return json_encode($device);
+        } else {
+            return response('Not found.', 404);
+        }
+    }
 
+    /**
+     * Vrati zarizeni podle id, nebo null, pokud neni nalezeno.
+     *
+     * @param $id
+     * @return Zarizeni
+     */
+    public function getDeviceById($id) {
+        return Zarizeni::findByIdJoinAddress($id);
+    }
+
+    /**
+     * Vrati zaznamy o doprave pro dane zarizeni. Request obsahuje dodatecne url parametry.
+     *
+     * @param Request $request
+     * @param $deviceId
+     */
+    public function findTrafficByDevice(Request $request, $deviceId) {
         // nacti parametry
         $params = $this->loadDateTimeDirectionConstraints($request);
         $dateFrom = $params[self::DATE_FROM_PARAM];
@@ -66,13 +93,62 @@ class DeviceController extends Controller
         $timeTo = $params[self::TIME_TO_PARAM];
         $direction = $params[self::DIRECTION_PARAM];
 
-        $device = Zarizeni::findByIdJoinAddress($id);
+        return Zaznam::findByDevice($deviceId, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
+    }
+
+    /**
+     * Nacte zarizeni spolecne se vsemi jeho zaznamy (podle url parametru) a vrati je jako stahnutelny csv soubor.
+     * Csv bude obsahovat udaje o zarizeni na prvni radce, udaje o doprave na nasledujicich.
+     *
+     * Pokud zarizeni nebylo nalezeno, je vracena 404.
+     *
+     * @param Request $request
+     * @param $id
+     * @return Mixed_
+     */
+    public function getDeviceByIdAsCsv(Request $request, $id) {
+        $device = $this->getDeviceById($id);
+
         if ($device != null) {
-            $device->traffics = Zaznam::findByDevice($id, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
-            return json_encode($device);
+            $devArray = json_decode(json_encode($device), true);
+            // tmp file
+            $tmpFileName = 'doprava-export-'.time().'.csv';
+            $tmpFilePath = tempnam(sys_get_temp_dir(), $tmpFileName);
+            $df = fopen($tmpFilePath, 'w');
+
+            // hlavicka pro zarizeni
+            fputcsv($df, array_keys($devArray));
+            fputcsv($df, $devArray);
+
+            // zaznamy o doprave
+            $traffic = $this->findTrafficByDevice($request, $id);
+            if ($traffic != null && count($traffic) > 0) {
+
+                // hlavicka pro zaznamy
+                $tr = $this->stdClassToArray($traffic[0]);
+                fputcsv($df, array_keys($tr));
+
+                // samotna data
+                foreach ($traffic as $tr) {
+                    $tr = $this->stdClassToArray($tr);
+                    fputcsv($df, $tr);
+                }
+            }
+            fclose($df);
+            return response()->download($tmpFilePath, $tmpFileName, array())->deleteFileAfterSend(true);
         } else {
             return response('Not found.', 404);
         }
+    }
+
+    /**
+     * Konvertuje objekt typu stdClass na pole pomoci funkci json_decode(), json_encode().
+     *
+     * @param $object
+     * @return Array_
+     */
+    private function stdClassToArray($object) {
+        return json_decode(json_encode($object), true);
     }
 
     public function getTrafficAverageByDevice(Request $request, $id)
