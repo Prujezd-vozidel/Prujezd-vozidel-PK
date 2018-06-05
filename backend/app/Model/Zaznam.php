@@ -20,12 +20,31 @@ class Zaznam extends BaseModel
     protected $table = 'zaznam';
 
     /**
-     * Vrati posledni datum pro ktere existuji nejake zaznamy.
+     * Vrati posledni datum pro ktere existuji zaznamy v tabulce zaznam_cas.
      * @return String Posledni datum pro ktere existuji zaznamy.
      */
     public static function lastInsertedDate()
     {
-        return DB::table('datum')->select(DB::raw('max(date(od)) as last_day'))->get();
+        return DB::table('zaznam_cas')
+            ->join('datum', 'zaznam_cas.datum_id', '=', 'datum.id')
+            ->select(DB::raw(
+                'max(date(datum.od)) as last_day'
+            ))
+            ->get();
+    }
+
+    /**
+     * Vrati posledni datum pro ktere existuji zaznamy v tabulce zaznam_prum_den.
+     * @return String Posledni datum pro ktere existuji zaznamy.
+     */
+    public static function lastDayAverageInsertedDate() {
+        return DB::table('zaznam_prum_den')
+            ->join('datum', 'zaznam_prum_den.datum_id', '=', 'datum.id')
+            ->select(DB::raw('
+                max(date(datum.od)) as last_day_from,
+                max(date(datum.do)) as last_day_to'
+            ))
+            ->get();
     }
 
     /**
@@ -37,7 +56,7 @@ class Zaznam extends BaseModel
      * @param String $timeFrom Pocatecni cas. Null znamena 00:00.
      * @param String $timeTo Koncovy cas. Null znamena 23:59.
      * @param int $direction Pozadovany smer. Null znamena oba smery.
-     * @return array Prumery dopravy pro casovy usek podle typu vozidla.
+     * @return \stdClass Prumery dopravy pro casovy usek podle typu vozidla.
      */
     public static function averageByDevice($deviceId, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction)
     {
@@ -84,6 +103,60 @@ class Zaznam extends BaseModel
             ->orderBy('zaznam.vozidlo_id', 'asc');
 
         return $query->get();
+    }
+
+    /**
+     * Vrati denni prumery podle typu vozidla.
+     *
+     * @param integer $deviceId Id Zarizeni.
+     * @param String $dateFrom Pocatecni datum. Null znamená poledni vlozeny den.
+     * @param String $dateTo Koncove datum. Null znamena posledni vlozeny den.
+     * @param integer $direction Pozadovany smer. Null znamena oba smery.
+     * @return \stdClass Denni prumery podle typu vozidla.
+     */
+    public static function averageByDay($deviceId, $dateFrom, $dateTo, $direction) {
+        $lastDateFrom = null;
+        $lastDateTo = null;
+        $lastDate = null;
+        $dir = null;
+
+        // jedno z omezujicich dat je null => ziskej posledni vlozene datum
+        if ($dateFrom == null || $dateTo == null) {
+            $lastDate = Zaznam::lastDayAverageInsertedDate();
+            if ($lastDate == null) {
+                // database is empty
+                return "no-data";
+            } else {
+                $lastDateFrom = $lastDate[0]->last_day_from;
+                $lastDateTo = $lastDate[0]->last_day_to;
+            }
+        }
+
+        // vytvoreni query - vsechno to dat dohromady
+        $query = DB::table('zaznam_prum_den')
+            ->join('datum', 'zaznam_prum_den.datum_id', '=', 'datum.id')
+            ->select(DB::raw("
+                date_format(datum.od, '%Y-%m-%d') as date,
+                zaznam_prum_den.rychlost_prumer as speedAverage,
+                zaznam_prum_den.vozidla_pocet as numberVehicle,
+                zaznam_prum_den.vozidlo_id as typeVehicle
+            "))
+            ->whereDate('datum.od', '>=', $dateFrom == null ? $lastDateFrom : $dateFrom)
+            ->whereDate('datum.do', '<=', $dateTo == null ? $lastDateTo : $dateTo)
+            ->where('zaznam_prum_den.zarizeni_id', '=', $deviceId);
+
+        if ($direction != null) {
+            $query = $query->where('zaznam_prum_den.smer', '=', $direction);
+        }
+
+        // pridat grouping a razeni nakonec
+        $query = $query
+            ->groupBy('date', 'typeVehicle')
+            ->orderBy('date', 'asc')
+            ->orderBy('zaznam_prum_den.vozidlo_id', 'asc');
+
+        return $query->get();
+
     }
 
     /**

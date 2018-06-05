@@ -177,6 +177,36 @@ class DeviceController extends Controller
         }
     }
 
+    /**
+     * Vrati denni prumery pro jednotlive typy vozidel.
+     *
+     * @param Request $request Request s parametry.
+     * @param $id Id zarizeni.
+     * @return Mixed_
+     */
+    public function getTrafficDayAverage(Request $request, $id) {
+        // nacteni parametru
+        $params = $this->loadDateTimeDirectionConstraints($request);
+        $dateFrom = $params[self::DATE_FROM_PARAM];
+        $dateTo = $params[self::DATE_TO_PARAM];
+        $direction = $params[self::DIRECTION_PARAM];
+
+        $device = Zarizeni::findByIdJoinAddress($id);
+        if ($device != null) {
+            $device->dateFrom = $dateFrom;
+            $device->dateTo = $dateTo;
+
+            if ($direction != null) {
+                $device->direction = intval($direction);
+            }
+
+            $device->traffics = Zaznam::averageByDay($id, $dateFrom, $dateTo, $direction);
+            return json_encode($device);
+        } else {
+            return response('Not found.', 404);
+        }
+    }
+
     public function getAll()
     {
         return Zarizeni::getAllJoinAddress();
@@ -203,6 +233,7 @@ class DeviceController extends Controller
      * Defaultni hodnoty jsou null.
      *
      * @param Request $request Request ze ktere budou nacitany parametry.
+     * @return array Pole s nactenymi parametry.
      */
     private function loadDateTimeDirectionConstraints(Request $request)
     {
