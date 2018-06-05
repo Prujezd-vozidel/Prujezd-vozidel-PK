@@ -32,7 +32,7 @@ $app->get($apiUrlRoot.'devices', [
 
 
 /**
- * Vrati zaznamy o doprav e za casovy usek pro dane zarizeni.
+ * Vrati zaznamy o doprave za casovy usek pro dane zarizeni.
  */
 $app->get($apiUrlRoot.'devices/{id}', [
     'middleware' => [$corsMiddle, $jwtMiddle],
@@ -52,13 +52,29 @@ $app->get($apiUrlRoot.'devices/{id}/time-period', [
     'uses' => 'DeviceController@getTrafficAverageByDevice'
 ]);
 
+/**
+ * Vrati prumery dopravy pro danze zarizeni za casovy usek jako csv.
+ */
+$app->get($apiUrlRoot.'devices/{id}/time-period/csv', [
+    'middleware' => $jwtMiddle,
+    'uses' => 'DeviceController@getTrafficAverageByDeviceCsv'
+]);
+
 
 /**
- * Vrati denni prumery podle typu vozidla
+ * Vrati denni prumery podle typu vozidla.
  */
 $app->get($apiUrlRoot.'devices/{id}/day-period', [
     'middleware' => [$corsMiddle, $jwtMiddle],
     'uses' => 'DeviceController@getTrafficDayAverage'
+]);
+
+/**
+ * Vrati denni prumery podle typu vozidla jako csv soubor.
+ */
+$app->get($apiUrlRoot.'devices/{id}/day-period/csv', [
+    'middleware' => $jwtMiddle,
+    'uses' => 'DeviceController@getTrafficDayAverageCsv'
 ]);
 
 /**
