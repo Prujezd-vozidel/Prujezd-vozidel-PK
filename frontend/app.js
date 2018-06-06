@@ -170,6 +170,7 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
         $scope.showInfoLoading = false;
         $scope.vehicles = [];
         $scope.filterVehicles = [];
+        $scope.urlExportCsv = null;
 
         Vehicle.query(null, function (data) {
             $scope.vehicles = data;
@@ -206,23 +207,23 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 
         let range = $scope.getRange();
 
-        // if (!$rootScope.selectDevice || args.id !== $rootScope.selectDevice.id)
-        //     $rootScope.selectDevice = {name: '...', street: '...', town: '...'};
-
-
-        Device.get({
+        let query = {
             period: range.isTime ? 'time-period' : 'day-period',
             id: args.id,
             direction: args.direction,
             dateFrom: range.fromDate.format('YYYY-MM-DD'),
             dateTo: range.toDate.format('YYYY-MM-DD'),
             timeFrom: range.isTime ? range.fromTime.format('HH:mm') : null,
-            timeTo: range.isTime ? range.toTime.format('HH:mm') : null,
-        }, function (data) {
+            timeTo: range.isTime ? range.toTime.format('HH:mm') : null
+        };
+
+        Device.get(query, function (data) {
             $rootScope.selectDevice = data;
 
             $scope.renderGraphAverageSpeed();
             $scope.renderGraphNumberVehicles();
+
+            $scope.urlExportCsv = $scope.generateUrlExportCsv(query);
 
             $scope.showInfoLoading = false;
         }, function (response) {
@@ -234,6 +235,14 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 
     });
 
+    $scope.generateUrlExportCsv = function (query) {
+        let relativeUrl = '/devices/:id/:period/csv?'.replace(':id', query.id).replace(':period', query.period);
+        delete query.id;
+        delete query.period;
+
+        let paramsUrl = jQuery.param(query);
+        return config.API_URL + relativeUrl + paramsUrl;
+    };
 
     $scope.changeRange = function () {
         if ($scope.range.fromDate >= $scope.range.toDate || ($scope.range.isTime && $scope.range.fromTime >= $scope.range.toTime)) {

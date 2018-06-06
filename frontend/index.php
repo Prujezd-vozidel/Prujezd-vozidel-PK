@@ -210,6 +210,10 @@
             <h4 class="mt-4">Počet vozidel</h4>
             <canvas id="graphNumberVehicles" class="mb-5"></canvas>
 
+            <div class="text-center">
+                <a class="btn btn-dark" href="{{ urlExportCsv }}" role="button">Export CSV</a>
+            </div>
+
             <div class="text-center mb-2 mt-2 w-100">
                 <small class="text-muted">zdroj dat: <a target="_blank" href="https://doprava.plzensky-kraj.cz">doprava.plzensky-kraj.cz</a>
                 </small>
