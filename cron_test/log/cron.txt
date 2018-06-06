@@ -1,0 +1,60 @@
+07.06.2018 00:16:03.043
+--- INFO ---
+Data k vybranemu dni (05.06.2018) jeste v databazi nejsou.
+
+07.06.2018 00:16:03.070
+--- INFO ---
+ZACATEK PROCEDURY pro den 05.06.2018.
+
+07.06.2018 00:16:03.077
+--- INFO ---
+Zpracovavani zaznamu o doprave.
+
+07.06.2018 00:16:03.086
+--- INFO ---
+Zpracovavani zaznamu o lokacich.
+
+07.06.2018 00:16:03.172
+--- INFO ---
+KONEC PROCEDURY.
+
+07.06.2018 00:28:23.291
+--- INFO ---
+Data k vybranemu dni (05.06.2018) jeste v databazi nejsou.
+
+07.06.2018 00:28:23.306
+--- INFO ---
+ZACATEK PROCEDURY pro den 05.06.2018.
+
+07.06.2018 00:28:23.317
+--- INFO ---
+Zpracovavani zaznamu o doprave.
+
+07.06.2018 00:28:23.398
+--- INFO ---
+Zpracovavani zaznamu o lokacich.
+
+07.06.2018 00:28:23.409
+--- INFO ---
+KONEC PROCEDURY.
+
+07.06.2018 00:35:30.813
+--- INFO ---
+Data k vybranemu dni (05.06.2018) jeste v databazi nejsou.
+
+07.06.2018 00:35:30.829
+--- INFO ---
+ZACATEK PROCEDURY pro den 05.06.2018.
+
+07.06.2018 00:35:30.838
+--- INFO ---
+Zpracovavani zaznamu o doprave.
+
+07.06.2018 00:35:30.851
+--- INFO ---
+Zpracovavani zaznamu o lokacich.
+
+07.06.2018 00:35:30.861
+--- INFO ---
+KONEC PROCEDURY.
+
