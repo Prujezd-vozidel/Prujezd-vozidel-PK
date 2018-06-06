@@ -98,7 +98,8 @@ class DeviceController extends Controller
         return Zaznam::findByDevice($deviceId, $dateFrom, $dateTo, $timeFrom, $timeTo, $direction);
     }
 
-    public function findDayAverageTrafficByDevice(Request $request, $deviceId) {
+    public function findDayAverageTrafficByDevice(Request $request, $deviceId)
+    {
         // nacti parametry
         $params = $this->loadDateTimeDirectionConstraints($request);
         $dateFrom = $params[self::DATE_FROM_PARAM];
@@ -146,12 +147,13 @@ class DeviceController extends Controller
      * @param integer $id Id zarizeni.
      * @return Mixed_
      */
-    public function getTrafficAverageByDeviceCsv(Request $request, $id) {
+    public function getTrafficAverageByDeviceCsv(Request $request, $id)
+    {
         return $this->createCsvFileForDeviceData(
             $this->findDeviceByIdSetDates($request, $id),
             $this->findDayAverageTrafficByDevice($request, $id),
-            'doprava-prumery-export-'
-            );
+            'doprava-casove-prumery-export-'
+        );
     }
 
     /**
@@ -161,7 +163,8 @@ class DeviceController extends Controller
      * @param $deviceId Id zarizeni.
      * @return Mixed_
      */
-    public function findTrafficAverageByDevice(Request $request, $deviceId) {
+    public function findTrafficAverageByDevice(Request $request, $deviceId)
+    {
         // nacti parametry
         $params = $this->loadDateTimeDirectionConstraints($request);
         $dateFrom = $params[self::DATE_FROM_PARAM];
@@ -282,7 +285,8 @@ class DeviceController extends Controller
      * @param $df Ukazatel na soubor.
      * @param $array Pole.
      */
-    private function addArrayToCsvFile($df, $array) {
+    private function addArrayToCsvFile($df, $array)
+    {
         if ($array != null && count($array) > 0) {
             $row = $this->stdClassToArray($array[0]);
             fputcsv($df, array_keys($row));
@@ -304,7 +308,8 @@ class DeviceController extends Controller
      * @param integer $id id zarizeni.
      * @return Mixed_
      */
-    private function findDeviceByIdSetDates(Request $request, $id) {
+    private function findDeviceByIdSetDates(Request $request, $id)
+    {
         // nacteni parametru
         $params = $this->loadDateTimeDirectionConstraints($request);
         $dateFrom = $params[self::DATE_FROM_PARAM];
@@ -332,7 +337,8 @@ class DeviceController extends Controller
      * @param string $namePrefix Prefix jmena stahovaneho souboru.
      * @return Mixed_
      */
-    private function createCsvFileForDeviceData($device, $traffic, $namePrefix) {
+    private function createCsvFileForDeviceData($device, $traffic, $namePrefix)
+    {
 
         if ($device != null) {
             $devArray = json_decode(json_encode($device), true);

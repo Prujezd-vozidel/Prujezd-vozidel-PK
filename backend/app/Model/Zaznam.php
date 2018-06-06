@@ -81,13 +81,13 @@ class Zaznam extends BaseModel
             ->select(DB::raw("
                 date_format(datum.od, '%H:%i') as timeFrom,
                 date_format(datum.do, '%H:%i') as timeTo,
-                ROUND(avg(zaznam.rychlost_prumer),0) as speedAverage,
-                CAST(sum(zaznam.vozidla_pocet) as UNSIGNED) as numberVehicle,
-                ROUND(avg(zaznam.vozidla_pocet),0) as numberVehicleAverage,
+                ROUND(AVG(zaznam.rychlost_prumer), 0) as speedAverage,
+                CAST(SUM(zaznam.vozidla_pocet) as UNSIGNED) as numberVehicle,
+                ROUND(AVG(zaznam.vozidla_pocet), 0) as numberVehicleAverage,
                 zaznam.vozidlo_id as typeVehicleId
             "))
             ->whereDate('datum.od', '>=', $dateFrom == null ? $lastDate : $dateFrom)
-            ->whereDate('datum.do', '<=', $dateTo == null ? $lastDate : $dateTo)
+            ->whereDate('datum.od', '<=', $dateTo == null ? $lastDate : $dateTo)
             ->whereTime('datum.od', '>=', $timeFrom == null ? '08:00:00' : $timeFrom)
             ->whereTime('datum.od', '<=', $timeTo == null ? '23:59:59' : $timeTo)
             ->where('zaznam_cas.zarizeni_id', '=', $deviceId);
@@ -137,12 +137,12 @@ class Zaznam extends BaseModel
             ->join('datum', 'zaznam_prum_den.datum_id', '=', 'datum.id')
             ->select(DB::raw("
                 date_format(datum.od, '%Y-%m-%d') as date,
-                zaznam_prum_den.rychlost_prumer as speedAverage,
-                zaznam_prum_den.vozidla_pocet as numberVehicle,
-                zaznam_prum_den.vozidlo_id as typeVehicle
+                ROUND(AVG(zaznam_prum_den.rychlost_prumer), 0) as speedAverage,
+                CAST(SUM(zaznam_prum_den.vozidla_pocet) as UNSIGNED) as numberVehicle,
+                zaznam_prum_den.vozidlo_id as typeVehicleId
             "))
             ->whereDate('datum.od', '>=', $dateFrom == null ? $lastDateFrom : $dateFrom)
-            ->whereDate('datum.do', '<=', $dateTo == null ? $lastDateTo : $dateTo)
+            ->whereDate('datum.od', '<=', $dateTo == null ? $lastDateTo : $dateTo)
             ->where('zaznam_prum_den.zarizeni_id', '=', $deviceId);
 
         if ($direction != null) {
@@ -151,7 +151,7 @@ class Zaznam extends BaseModel
 
         // pridat grouping a razeni nakonec
         $query = $query
-            ->groupBy('date', 'typeVehicle')
+            ->groupBy('date', 'zaznam_prum_den.vozidlo_id')
             ->orderBy('date', 'asc')
             ->orderBy('zaznam_prum_den.vozidlo_id', 'asc');
 

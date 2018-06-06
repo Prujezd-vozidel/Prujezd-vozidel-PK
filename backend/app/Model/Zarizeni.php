@@ -62,26 +62,26 @@ class Zarizeni extends BaseModel
         $query = DB::table('zarizeni')
             ->join('ulice', 'zarizeni.ulice_id', '=', 'ulice.id')
             ->join('mesto', 'ulice.mesto_id', '=', 'mesto.id')
-            ->join('zaznam_cas', 'zaznam_cas.zarizeni_id', '=', 'zarizeni.id')
-            ->select('zarizeni.id as id',
-                'zarizeni.smer_popis as name',
-                'ulice.nazev as street',
-                'ulice.id as street_id',
-                'ulice.zem_sirka as lat',
-                'ulice.zem_delka as lng',
-                'mesto.nazev as town',
-                'mesto.id as town_id',
-                $showDirection ? 'zaznam_cas.smer as direction' : DB::Raw('null as direction'))
-            ->where('ulice.nazev', 'like', '%' . $address . '%')
-            ->orWhere('mesto.nazev', 'like', '%' . $address . '%')
-            ->orWhere('zarizeni.smer_popis', 'like', '%' . $address . '%');
+            ->select(DB::Raw('zarizeni.id as id,
+                zarizeni.smer_popis as name,
+                ulice.nazev as street,
+                ulice.id as street_id,
+                ulice.zem_sirka as lat,
+                ulice.zem_delka as lng,
+                mesto.nazev as town,
+                mesto.id as town_id,' .
+                ($showDirection ? 'zaznam_cas.smer as direction' : 'null as direction')));
 
-        if (!$showDirection) {
-            $query = $query->groupBy('zarizeni.id');
-        } else {
-            $query = $query->groupBy('zarizeni.id', 'zaznam_cas.smer');
+        if (!empty($address)) {
+            $query = $query->where('ulice.nazev', 'like', '%' . $address . '%')
+                ->orWhere('mesto.nazev', 'like', '%' . $address . '%')
+                ->orWhere('zarizeni.smer_popis', 'like', '%' . $address . '%');
         }
 
+        if ($showDirection) {
+            $query = $query->join('zaznam_cas', 'zaznam_cas.zarizeni_id', '=', 'zarizeni.id')
+                ->groupBy('zarizeni.id', 'zaznam_cas.smer');
+        }
 
         return $query->get();
     }

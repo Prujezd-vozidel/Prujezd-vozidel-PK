@@ -13,7 +13,7 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
           integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-    <link rel="stylesheet" media="screen" href="./assets/css/main.css">
+    <link rel="stylesheet" media="screen" href="./assets/css/styles.min.css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-route.min.js"></script>
@@ -21,7 +21,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-sanitize.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
 
 
     <script>
@@ -55,8 +55,7 @@
 <div class="row h-100" ng-init="load()">
 
     <!--SEARCH section-->
-    <section class="search col-12 col-sm-6 col-lg-3" id="search" ng-controller="searchController"
-             ng-class="{ 'col-sm-12': $root.selectDevice==null, 'col-sm-6': $root.selectDevice!=null }">
+    <section class="search col-12 col-lg-3" id="search" ng-controller="searchController">
 
         <div class="w-100 searchWrapper">
             <header class="mt-2">
@@ -76,12 +75,12 @@
                            ng-model-options="{debounce: 600}">
                 </div>
                 <div class="custom-control custom-checkbox mb-3">
-                    <input type="checkbox" id="searchDirection" name="searchDirection" class="custom-control-input"
+                    <input type="checkbox" id="searchIsDirection" name="searchIsDirection" class="custom-control-input"
                            checked required
                            ng-model="search.isDirection"
                            ng-change="searchLocations()"
                            ng-model-options="{debounce: 600}">
-                    <label for="searchDirection" class="custom-control-label">Rozlišovat směr</label>
+                    <label for="searchIsDirection" class="custom-control-label">Rozlišovat směr</label>
                 </div>
             </form>
 
@@ -114,13 +113,13 @@
             </div>
         </div>
         <footer class="text-center mb-2 mt-2 w-100">
-            <small class="text-muted">2018 © FAV, ZČU</small>
+            <small class="text-muted">© 2018 FAV, ZČU • version: {{ config.APP_VERSION }}</small>
         </footer>
     </section>
 
 
     <!--INFO section-->
-    <section class="info col-12 col-sm-6 col-lg-4" id="info" ng-show="$root.selectDevice!=null"
+    <section class="info col-12 col-lg-5" id="info" ng-show="$root.selectDevice!=null"
              ng-controller="infoController">
 
         <header class="mt-2">
@@ -163,15 +162,26 @@
                 </div>
             </div>
 
+
             <div class="form-row">
                 <div class="form-group col">
-                    <label for="rangehFromTime">Časové rozmezí dne</label>
+                    <label for="rangeFromTime">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" id="rangeIsTime" name="rangeIsTime" class="custom-control-input"
+                                   checked required
+                                   ng-model="range.isTime"
+                                   ng-model-options="{debounce: 300}"
+                                   ng-change="changeRange()">
+                            <label for="rangeIsTime" class="custom-control-label">Zobrazit časové rozmezí dne</label>
+                        </div>
+                    </label>
                     <input type="time" id="rangeFromTime" class="form-control form-control-sm"
                            ng-model="range.fromTime" required
                            ng-class="{'is-invalid': range.fromTime>=range.toTime}"
                            ng-change="changeRange()"
-                           ng-model-options="{debounce: 600}">
-                    <div class="invalid-feedback">
+                           ng-model-options="{debounce: 600}"
+                           ng-show="range.isTime">
+                    <div class="invalid-feedback" ng-show="range.isTime">
                         Tento čas musí být menší.
                     </div>
                 </div>
@@ -182,14 +192,14 @@
                            ng-model="range.toTime" required
                            ng-class="{'is-invalid': range.fromTime>=range.toTime}"
                            ng-change="changeRange()"
-                           ng-model-options="{debounce: 600}">
-                    <div class="invalid-feedback">
+                           ng-model-options="{debounce: 600}"
+                           ng-show="range.isTime">
+                    <div class="invalid-feedback" ng-show="range.isTime">
                         Tento čas musí být vetší.
                     </div>
                 </div>
             </div>
         </div>
-
 
         <div class="loading" ng-show="showInfoLoading"></div>
 
@@ -197,33 +207,23 @@
             <h4 class="mt-4">Průměrná rychlost</h4>
             <canvas id="graphAverageSpeed"></canvas>
 
-
             <h4 class="mt-4">Počet vozidel</h4>
-            <form>
-                <div class="form-group">
-                    <select id="typeVehicle" class="custom-select custom-select-sm"
-                            ng-model="typeVehicle"
-                            ng-change="renderGraphNumberVehicles()"
-                            ng-options="vehicle.id as vehicle.name for vehicle in filterVehicles">
-                        <option value="">Všechna vozidla</option>
-                    </select>
-                </div>
-            </form>
-            <canvas id="graphNumberVehicles"></canvas>
+            <canvas id="graphNumberVehicles" class="mb-5"></canvas>
 
+            <div class="text-center mb-2 mt-2 w-100">
+                <small class="text-muted">zdroj dat: <a target="_blank" href="https://doprava.plzensky-kraj.cz">doprava.plzensky-kraj.cz</a>
+                </small>
+            </div>
         </div>
 
         <div ng-show="$root.selectDevice && $root.selectDevice.traffics.length==0 && !showInfoLoading">
             <small class="form-text text-muted text-center">Data nejsou k dispozici</small>
         </div>
-
-
     </section>
 
-
     <!--MAP section-->
-    <section class="map col-12 col-sm-12 " id="map"
-             ng-class="{ 'col-lg-9': $root.selectDevice==null, 'col-lg-5': $root.selectDevice!=null }"
+    <section class="map col-12" id="map"
+             ng-class="{ 'col-lg-9': $root.selectDevice==null, 'col-lg-4': $root.selectDevice!=null }"
              ng-controller="mapController">
     </section>
 </div>
@@ -256,8 +256,6 @@
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSx7hyAzQiG5uocJTeZgf1Z3lpDy4kpEk"
         type="text/javascript"></script>
-
-<script type="text/javascript" src="./assets/libs/gmaps.min.js"></script>
 
 </body>
 </html>

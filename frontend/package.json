@@ -1,0 +1,16 @@
+{
+  "name": "PVPK",
+  "version": "1.2.0",
+  "dependencies": {
+    "gulp": "^4.0.0",
+    "gulp-sass": "^4.0.1",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-stylelint": "^7.0.0",
+    "gulp-rename":"^1.2.3",
+    "stylelint": "^9.2.1",
+    "stylelint-order": "^0.8.1",
+    "stylelint-config-rational-order": "^0.0.2",
+    "stylelint-config-standard": "^18.2.0",
+    "stylelint-config-recommended-scss": "^3.2.0"
+  }
+}
