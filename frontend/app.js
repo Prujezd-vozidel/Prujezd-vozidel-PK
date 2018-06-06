@@ -2,57 +2,35 @@ let app = angular.module('pvpk', ['ngRoute', 'ngResource', 'ngSanitize']);
 
 app.constant('config', {
     APP_NAME: 'PVPK',
-    APP_VERSION: 1.0,
+    APP_VERSION: '1.2.0',
     API_URL: API_URL,
     API_TOKEN: API_TOKEN,
     DEFAULT_POSITION: {LAT: 49.53, LNG: 13.3},
-    DEFAULT_ZOOM: 10
+    DEFAULT_ZOOM: 10,
+    DEFAULT_ZOOM_MAX: 7,
 });
-
-//PRIPRAVA PRO REFAKTORING
-// app.config(function($stateProvider, $locationProvider) {
-//     // $stateProvider
-//     // .state('report',{
-//     //     views: {
-//     //         'search': {
-//     //             templateUrl: 'report-filters.html',
-//     //             controller: searchController
-//     //         },
-//     //         'graph': {
-//     //             templateUrl: 'report-table.html',
-//     //             controller: graphController
-//     //         },
-//     //         'map': {
-//     //             templateUrl: 'report-graph.html',
-//     //             controller: mapController
-//     //         }
-//     //     }
-//     // });
-//    $locationProvider.html5Mode(true);
-// });
-
 
 app.controller('mainController', function ($rootScope, $scope, $location, $window) {
 
     this.$onInit = function () {
-
+        $scope.showLoadingScreen = true;
     };
 
     $window.onload = function () {
         let params = $location.search();
         if (params.deviceId) {
-            $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
             $rootScope.$emit('activeMarker', {id: params.deviceId});
         }
 
-        $scope.showLoadingScreen = false;
+        $scope.$apply(function () {
+            $scope.showLoadingScreen = false;
+        });
     };
 
     $rootScope.$on('$locationChangeSuccess', function (event, newUrl, oldUrl) {
+        let params = $location.search();
 
         if (newUrl !== oldUrl && $scope.historyUrl) {
-            let params = $location.search();
-
             if ($scope.historyUrl.q !== $scope.historyUrl.q || $scope.historyUrl.isDirection != params.isDirection) {
                 $rootScope.$emit('setSearchFromUrl', null);
             }
@@ -66,10 +44,12 @@ app.controller('mainController', function ($rootScope, $scope, $location, $windo
             } else if (params.deviceId && ($scope.historyUrl.deviceId !== params.deviceId || $scope.historyUrl.direction !== params.direction)) {
                 $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
                 $rootScope.$emit('activeMarker', {id: params.deviceId});
-            }else if(!params.deviceId && $scope.historyUrl.deviceId){
+            } else if (!params.deviceId && $scope.historyUrl.deviceId) {
                 $rootScope.selectDevice = null;
                 $rootScope.$emit('setDefaultMap', null);
             }
+        } else if (params.deviceId) {
+            $rootScope.$emit('infoLocation', {id: params.deviceId, direction: params.direction});
         }
 
         $scope.historyUrl = $location.search();
@@ -133,6 +113,7 @@ app.controller('mainController', function ($rootScope, $scope, $location, $windo
 app.controller('searchController', function ($rootScope, $scope, $location, config, Device) {
 
     this.$onInit = function () {
+        $scope.config = config;
         $scope.locations = [];
         $scope.showSearchLoading = false;
 
@@ -140,17 +121,17 @@ app.controller('searchController', function ($rootScope, $scope, $location, conf
     };
 
     $scope.searchLocations = function () {
+        let params = $location.search();
+        params.q = $scope.search.q;
+        params.isDirection = $scope.search.isDirection ? 1 : null;
+        $location.search(params);
+
         if (!$scope.search.q || $scope.search.q.length <= 1) {
             $scope.locations = [];
             return;
         }
 
         $scope.showSearchLoading = true;
-
-        let params = $location.search();
-        params.q = $scope.search.q;
-        params.isDirection = $scope.search.isDirection ? 1 : 0;
-        $location.search(params);
 
         Device.query({
             address: $scope.search.q,
@@ -167,7 +148,6 @@ app.controller('searchController', function ($rootScope, $scope, $location, conf
 
     $rootScope.$on('setSearchFromUrl', function (event, args) {
         let params = $location.search();
-
         $scope.search = {
             q: params.q,
             isDirection: params.isDirection ? !!+params.isDirection : false
@@ -189,8 +169,8 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
         $rootScope.selectDevice = null;
         $scope.showInfoLoading = false;
         $scope.vehicles = [];
-        $scope.typeVehicle = null;
         $scope.filterVehicles = [];
+        $scope.urlExportCsv = null;
 
         Vehicle.query(null, function (data) {
             $scope.vehicles = data;
@@ -211,7 +191,8 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
             fromDate: moment(params.fromDate, 'YYYY-MM-DD').isValid() ? moment(params.fromDate).toDate() : defaultRange.fromDate.toDate(),
             toDate: moment(params.toDate, 'YYYY-MM-DD').isValid() ? moment(params.toDate).toDate() : defaultRange.toDate.toDate(),
             fromTime: moment(params.fromTime, 'HH:mm').isValid() ? moment(params.fromTime, 'HH:mm').toDate() : defaultRange.fromTime.toDate(),
-            toTime: moment(params.toTime, 'HH:mm').isValid() ? moment(params.toTime, 'HH:mm').toDate() : defaultRange.toTime.toDate()
+            toTime: moment(params.toTime, 'HH:mm').isValid() ? moment(params.toTime, 'HH:mm').toDate() : defaultRange.toTime.toDate(),
+            isTime: params.isTime == 0 ? false : defaultRange.isTime
         };
 
     });
@@ -226,19 +207,23 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 
         let range = $scope.getRange();
 
-        Device.get({
+        let query = {
+            period: range.isTime ? 'time-period' : 'day-period',
             id: args.id,
             direction: args.direction,
             dateFrom: range.fromDate.format('YYYY-MM-DD'),
             dateTo: range.toDate.format('YYYY-MM-DD'),
-            timeFrom: range.fromTime.format('HH:mm'),
-            timeTo: range.toTime.format('HH:mm'),
-        }, function (data) {
+            timeFrom: range.isTime ? range.fromTime.format('HH:mm') : null,
+            timeTo: range.isTime ? range.toTime.format('HH:mm') : null
+        };
+
+        Device.get(query, function (data) {
             $rootScope.selectDevice = data;
 
-            $scope.typeVehicle = null;
             $scope.renderGraphAverageSpeed();
             $scope.renderGraphNumberVehicles();
+
+            $scope.urlExportCsv = $scope.generateUrlExportCsv(query);
 
             $scope.showInfoLoading = false;
         }, function (response) {
@@ -250,8 +235,17 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 
     });
 
+    $scope.generateUrlExportCsv = function (query) {
+        let relativeUrl = '/devices/:id/:period/csv?'.replace(':id', query.id).replace(':period', query.period);
+        delete query.id;
+        delete query.period;
+
+        let paramsUrl = jQuery.param(query);
+        return config.API_URL + relativeUrl + paramsUrl;
+    };
+
     $scope.changeRange = function () {
-        if ($scope.range.fromDate >= $scope.range.toDate || $scope.range.fromTime >= $scope.range.toTime) {
+        if ($scope.range.fromDate >= $scope.range.toDate || ($scope.range.isTime && $scope.range.fromTime >= $scope.range.toTime)) {
             $rootScope.selectDevice.traffics = [];
             return;
         }
@@ -261,8 +255,9 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
         let params = $location.search();
         params.fromDate = range.fromDate.format('YYYY-MM-DD');
         params.toDate = range.toDate.format('YYYY-MM-DD');
-        params.fromTime = range.fromTime.format('HH:mm');
-        params.toTime = range.toTime.format('HH:mm');
+        params.fromTime = range.isTime ? range.fromTime.format('HH:mm') : null;
+        params.toTime = range.isTime ? range.toTime.format('HH:mm') : null;
+        params.isTime = range.isTime ? null : 0;
         $location.search(params);
 
         if ($rootScope.selectDevice)
@@ -279,7 +274,8 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
             fromDate: moment($scope.range.fromDate).isValid() ? moment($scope.range.fromDate) : defaultRange.fromDate,
             toDate: moment($scope.range.toDate).isValid() ? moment($scope.range.toDate) : defaultRange.toDate,
             fromTime: moment($scope.range.fromTime).isValid() ? moment($scope.range.fromTime) : defaultRange.fromTime,
-            toTime: moment($scope.range.toTime).isValid() ? moment($scope.range.toTime) : defaultRange.toTime
+            toTime: moment($scope.range.toTime).isValid() ? moment($scope.range.toTime) : defaultRange.toTime,
+            isTime: $scope.range.isTime ? true : false
         };
     };
 
@@ -288,15 +284,15 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
             fromDate: moment().day(-30),
             toDate: moment().day(-1),
             fromTime: moment({hour: 7}),
-            toTime: moment({hour: 16})
+            toTime: moment({hour: 16}),
+            isTime: true
         };
     };
-
 
     $scope.renderGraphAverageSpeed = function () {
 
         let t = $rootScope.selectDevice.traffics.reduce(function (l, r) {
-            let key = r.timeFrom;
+            let key = $scope.range.isTime ? r.timeFrom : r.date;
             if (typeof l[key] === 'undefined') {
                 l[key] = {
                     numberVehicle: 0,
@@ -312,12 +308,11 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
         }, {});
 
         let labels = jQuery.unique($rootScope.selectDevice.traffics.map(function (d) {
-            return d.timeFrom;
+            return $scope.range.isTime ? d.timeFrom : moment(d.date, 'YYYY-MM-DD').format('D.M.YYYY');
         }));
         let data = Object.values(t).map(function (d) {
             return Math.round(d.speedSum / d.numberVehicle);
         });
-
 
         let canvasGraphAverageSpeed = document.getElementById('graphAverageSpeed').getContext('2d');
 
@@ -336,12 +331,15 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
                     backgroundColor: 'rgba(0, 123, 255, 0.3)',
                     borderColor: 'rgba(0, 123, 255,1)',
                     cubicInterpolationMode: 'monotone',
-                    radius: 0
+                    pointRadius: 0
                 }]
             },
             options: {
                 responsive: true,
                 pointDot: false,
+                legend: {
+                    display: false
+                },
                 scales: {
                     xAxes: [{
                         ticks: {
@@ -355,13 +353,14 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
                             labelString: 'km/h'
                         },
                         ticks: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            max: Math.max(Math.round((Math.max.apply(null, data) + 10) / 10) * 10, 70)
                         }
                     }]
                 },
                 tooltips: {
-                    enabled: true,
-                    mode: 'single',
+                    mode: 'index',
+                    intersect: false,
                     callbacks: {
                         label: function (tooltipItems) {
                             return tooltipItems.yLabel + ' km/h';
@@ -380,7 +379,7 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 
 
         let labels = jQuery.unique($rootScope.selectDevice.traffics.map(function (d) {
-            return d.timeFrom;
+            return $scope.range.isTime ? d.timeFrom : moment(d.date, 'YYYY-MM-DD').format('D.M.YYYY');
         }));
 
         let useVehiclesIds = jQuery.unique($rootScope.selectDevice.traffics.map(function (d) {
@@ -393,29 +392,27 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 
         let datasets = [];
         for (let i = 0, vehicle; vehicle = $scope.filterVehicles[i]; i++) {
-            if ($scope.typeVehicle == null || $scope.typeVehicle === vehicle.id) {
-                let dataset = {
-                    label: vehicle.name,
-                    backgroundColor: color[vehicle.id].replace("#alpha", "0.3"),
-                    borderColor: color[vehicle.id].replace("#alpha", "1"),
-                    borderWidth: 2,
-                    data: []
-                };
+            let dataset = {
+                label: vehicle.name,
+                backgroundColor: color[vehicle.id].replace("#alpha", "0.3"),
+                borderColor: color[vehicle.id].replace("#alpha", "1"),
+                borderWidth: 2,
+                data: []
+            };
 
-                let l = 0;
-                for (let j = 0, traffic; traffic = $rootScope.selectDevice.traffics[j]; j++) {
-                    if (labels[l] !== traffic.timeFrom) {
-                        l++;
-                        if (dataset.data.length < l) {
-                            dataset.data.push(0);
-                        }
-                    }
-                    if (traffic.typeVehicleId === vehicle.id) {
-                        dataset.data.push(traffic.numberVehicleAverage);
+            let l = 0;
+            for (let j = 0, traffic; traffic = $rootScope.selectDevice.traffics[j]; j++) {
+                if (($scope.range.isTime && labels[l] !== traffic.timeFrom) || (!$scope.range.isTime && labels[l] !== moment(traffic.date, 'YYYY-MM-DD').format('D.M.YYYY'))) {
+                    l++;
+                    if (dataset.data.length < l) {
+                        dataset.data.push(0);
                     }
                 }
-                datasets.push(dataset);
+                if (traffic.typeVehicleId === vehicle.id) {
+                    dataset.data.push($scope.range.isTime ? traffic.numberVehicleAverage : traffic.numberVehicle);
+                }
             }
+            datasets.push(dataset);
         }
 
         let canvasGraphNumberVehicles = document.getElementById('graphNumberVehicles').getContext('2d');
@@ -430,11 +427,14 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
                 datasets: datasets
             },
             options: {
-                tooltips: {
-                    mode: 'index',
-                    intersect: false
-                },
                 responsive: true,
+                onResize: function (chart, size) {
+                    chart.options.legend.display = size.height > 240;
+                    chart.update();
+                },
+                legend: {
+                    position: 'bottom',
+                },
                 scales: {
                     xAxes: [{
                         stacked: true,
@@ -450,11 +450,14 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
                         },
                         stacked: true
                     }]
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false
                 }
             }
         });
     };
-
 
     $scope.infoClose = function () {
         $rootScope.selectDevice = null;
@@ -472,26 +475,19 @@ app.controller('infoController', function ($rootScope, $scope, $location, config
 app.controller('mapController', function ($rootScope, $scope, config, Device) {
 
     this.$onInit = function () {
+        $scope.markers = [];
 
-        $scope.map = new GMaps({
-            div: '#map',
+        $scope.map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: config.DEFAULT_POSITION.LAT, lng: config.DEFAULT_POSITION.LNG},
+            zoom: config.DEFAULT_ZOOM,
+            minZoom: config.DEFAULT_ZOOM_MAX,
             zoomControl: true,
             mapTypeControl: false,
             scaleControl: false,
             streetViewControl: false,
             rotateControl: false,
             fullscreenControl: false,
-            mapTypeId: 'roadmap',
-            zoom: config.DEFAULT_ZOOM,
-            lat: config.DEFAULT_POSITION.LAT,
-            lng: config.DEFAULT_POSITION.LNG,
-            // styles: [
-            //     {
-            //         featureType: "poi",
-            //         elementType: "labels",
-            //         stylers: [{ visibility: "off" }]
-            //     }
-            // ]
+            mapTypeId: google.maps.MapTypeId.ROADMAP
         });
 
         Device.query({showDirection: 0}, function (data) {
@@ -504,50 +500,60 @@ app.controller('mapController', function ($rootScope, $scope, config, Device) {
         });
     };
 
-
     $scope.createMarker = function (lctn) {
         if (lctn.lat && lctn.lng) {
-            $scope.map.addMarker({
-                lat: lctn.lat,
-                lng: lctn.lng,
+            let marker = new google.maps.Marker({
+                map: $scope.map,
+                position: {lat: lctn.lat, lng: lctn.lng},
                 title: lctn.name,
-                click: function () {
-                    $rootScope.$emit('infoLocation', {id: lctn.id});
-                },
-                infoWindow: {
+                infoWindow: new google.maps.InfoWindow({
                     content: '<h6 class="mb-1">' + lctn.name + '</h6>'
                     + '<address>' + lctn.street + ', ' + lctn.town + '</address>'
-                },
+                }),
                 id: lctn.id
             });
+
+            marker.addListener('click', function () {
+                $scope.closeInfoWindows();
+                marker.infoWindow.open($scope.map, marker);
+                $rootScope.$emit('infoLocation', {id: lctn.id});
+            });
+
+            $scope.markers.push(marker);
         }
     };
 
     $rootScope.$on('activeMarker', function (event, args) {
         let id = args.id;
-        for (let i = 0, marker; marker = $scope.map.markers[i]; i++) {
+        for (let i = 0, marker; marker = $scope.markers[i]; i++) {
             if (marker.id && marker.id === id && marker.infoWindow) {
-                $scope.map.setCenter(marker.position.lat(), marker.position.lng());
+                $scope.map.setCenter(marker.getPosition());
                 $scope.map.setZoom(12);
-                $scope.map.hideInfoWindows();
                 marker.infoWindow.open($scope.map, marker);
-                return;
+            } else {
+                marker.infoWindow.close();
             }
         }
     });
 
     $rootScope.$on('setDefaultMap', function (event, args) {
-        $scope.map.setCenter(config.DEFAULT_POSITION.LAT, config.DEFAULT_POSITION.LNG);
+        $scope.map.setCenter({lat: config.DEFAULT_POSITION.LAT, lng: config.DEFAULT_POSITION.LNG});
         $scope.map.setZoom(config.DEFAULT_ZOOM);
-        $scope.map.hideInfoWindows();
+        $scope.closeInfoWindows();
     });
+
+    $scope.closeInfoWindows = function () {
+        for (let i = 0, marker; marker = $scope.markers[i]; i++) {
+            marker.infoWindow.close();
+        }
+    };
 });
 
 
 app.factory('Device', function ($resource, config) {
-    return $resource(config.API_URL + '/devices/:id', {id: '@id'}, {
+    return $resource(config.API_URL + '/devices/:id', {id: '@id', period: '@period'}, {
         'get': {
-            url: config.API_URL + '/devices/:id/time-period',
+            url: config.API_URL + '/devices/:id/:period',
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

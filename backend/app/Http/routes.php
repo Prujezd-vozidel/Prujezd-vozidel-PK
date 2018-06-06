@@ -12,6 +12,8 @@
 */
 
 $apiUrlRoot='/api/v1/';
+$corsMiddle = 'cors';
+$jwtMiddle = 'jwtauth';
 
 /**
  * Welcome endpoint.
@@ -24,33 +26,62 @@ $app->get('/', function ()  {
  * Vrati seznam mericich zarizeni.
  */
 $app->get($apiUrlRoot.'devices', [
-    'middleware' => 'jwtauth',
+    'middleware' => [$corsMiddle, $jwtMiddle],
     'uses' => 'DeviceController@getDevice'
 ]);
 
 
 /**
- * Vrati zaznamy o doprav e za casovy usek pro dane zarizeni.
+ * Vrati zaznamy o doprave za casovy usek pro dane zarizeni.
  */
 $app->get($apiUrlRoot.'devices/{id}', [
-    'middleware' => 'jwtauth',
-    'uses' => 'DeviceController@getDeviceById'
+    'middleware' => [$corsMiddle, $jwtMiddle],
+    'uses' => 'DeviceController@getDeviceByIdWithTraffic'
+]);
+
+$app->get($apiUrlRoot.'devices/{id}/csv', [
+    'middleware' => $jwtMiddle,
+    'uses' => 'DeviceController@getDeviceByIdAsCsv'
 ]);
 
 /**
  * Vrati prumery dopravy pro danze zarizeni za casovy usek.
  */
 $app->get($apiUrlRoot.'devices/{id}/time-period', [
-   'middleware' => 'jwtauth',
+    'middleware' => [$corsMiddle, $jwtMiddle],
     'uses' => 'DeviceController@getTrafficAverageByDevice'
 ]);
 
+/**
+ * Vrati prumery dopravy pro danze zarizeni za casovy usek jako csv.
+ */
+$app->get($apiUrlRoot.'devices/{id}/time-period/csv', [
+    'middleware' => $jwtMiddle,
+    'uses' => 'DeviceController@getTrafficAverageByDeviceCsv'
+]);
+
+
+/**
+ * Vrati denni prumery podle typu vozidla.
+ */
+$app->get($apiUrlRoot.'devices/{id}/day-period', [
+    'middleware' => [$corsMiddle, $jwtMiddle],
+    'uses' => 'DeviceController@getTrafficDayAverage'
+]);
+
+/**
+ * Vrati denni prumery podle typu vozidla jako csv soubor.
+ */
+$app->get($apiUrlRoot.'devices/{id}/day-period/csv', [
+    'middleware' => $jwtMiddle,
+    'uses' => 'DeviceController@getTrafficDayAverageCsv'
+]);
 
 /**
  * Vrati vsechny typy aut.
  */
 $app->get($apiUrlRoot.'vehicles', [
-    'middleware' => 'jwtauth',
+    'middleware' => [$corsMiddle, $jwtMiddle],
     'uses' => 'VehicleController@getAll'
 ]);
 
@@ -58,7 +89,7 @@ $app->get($apiUrlRoot.'vehicles', [
  * Vrati vsechna mesta.
  */
 $app->get($apiUrlRoot.'cities', [
-    'middleware' => 'jwtauth',
+    'middleware' => [$corsMiddle, $jwtMiddle],
     'uses' => 'LocationController@getCities'
 ]);
 
