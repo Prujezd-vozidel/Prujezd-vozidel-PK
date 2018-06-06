@@ -14,6 +14,7 @@ class Location {
     // --- ZEMEPISNA SIRKA A DELKA A UDAJE POTREBNE K JEJICH ZJISTENI. ---
     
     private $key;
+    private $locality;
     private $region;
     
     public $lat;
@@ -27,6 +28,7 @@ class Location {
         // $this->area = $data[4];
         
         $this->key = "AIzaSyCSx7hyAzQiG5uocJTeZgf1Z3lpDy4kpEk";
+        $this->locality = "Plzeňský kraj";
         $this->region = "cz";
         $this->lat = -1;
         $this->lng = -1;
@@ -38,6 +40,7 @@ class Location {
         if ($this->town != $this->street) {
             $address .= " ".$this->street;
         }
+        $address .= " ".$this->locality;
         $address = str_replace(" ", "+", $address); // Nemusi byt, jen pro jistotu.
         
         $json = file_get_contents("https://maps.google.com/maps/api/geocode/json?address=$address&sensor=false&region=".$this->region."&key=".$this->key);
