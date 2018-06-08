@@ -2,6 +2,8 @@ var gulp = require('gulp');
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var rename = require("gulp-rename");
+var concat = require("gulp-concat");
+var uglify = require('gulp-uglify');
 
 gulp.task('sass', function () {
     return gulp.src('./assets/sass/**/*.scss')
@@ -14,7 +16,7 @@ gulp.task('sass', function () {
         .pipe(gulp.dest('./assets/css'));
 });
 
-gulp.task('fix-sass', function fixCssTask() {
+gulp.task('fix-sass', function () {
     const gulpStylelint = require('gulp-stylelint');
 
     return gulp.src('./assets/sass/**/*.scss')
@@ -24,7 +26,7 @@ gulp.task('fix-sass', function fixCssTask() {
         .pipe(gulp.dest('./assets/sass/'));
 });
 
-gulp.task('lint-sass', function lintCssTask() {
+gulp.task('lint-sass', function () {
     const gulpStylelint = require('gulp-stylelint');
 
     return gulp.src('./assets/sass/**/*.scss')
@@ -35,6 +37,30 @@ gulp.task('lint-sass', function lintCssTask() {
         }));
 });
 
-gulp.task('styles', gulp.series('fix-sass', 'sass'));
+gulp.task('build-js', function () {
+    return gulp.src([
+        './app/app.module.js',
+        './app/app.config.js',
+        './app/controllers/*.js',
+        './app/directives/*.js',
+        './app/services/*.js'
+    ])
+        .pipe(sourcemaps.init())
+        .pipe(concat('app.js'))
+        .pipe(gulp.dest('./'))
+        .pipe(uglify())
+        .pipe(rename({
+            suffix: ".min",
+            basename: "app",
+            extname: ".js"
+        }))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest('./'));
+});
 
-gulp.task('default', gulp.parallel('styles'));
+gulp.task('build-sass', gulp.series('fix-sass', 'sass'));
+
+gulp.task('build', gulp.parallel('build-sass', 'build-js'));
+
+
+gulp.task('default', gulp.parallel('build'));

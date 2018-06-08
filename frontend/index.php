@@ -15,29 +15,26 @@
           integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="./assets/css/styles.min.css">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-route.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-resource.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-resource.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-sanitize.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
 
+    <?php
+    //$base_url = 'http://students.kiv.zcu.cz/~valesz/index.php/api/v1';
+    $base_url = './../backend/public/api/v1';
 
+    include_once '../backend/lib/generateToken.php';
+    $token = generateToken();
+    ?>
     <script>
-        <?php
-        /* JEN PRO TESTOVANI, POZDEJI SE ODSTRANIT, A NAHRADIT NASDILENOU KNIHOVNOU */
-        //$base_url = 'http://students.kiv.zcu.cz/~valesz/index.php/api/v1';
-        $base_url = './../backend/public/api/v1';
-
-        include_once '../backend/lib/generateToken.php';
-        $token = generateToken();
-        ?>
         var API_URL = '<?=$base_url ?>';
         var API_TOKEN = '<?=$token ?>';
     </script>
 
-    <script src="./app.js"></script>
+    <script src="./app.min.js"></script>
 </head>
 <body ng-controller="mainController" class="container-fluid">
 
@@ -148,7 +145,6 @@
                     </div>
                 </div>
 
-
                 <div class="form-group col">
                     <label for="rangeToDate" class="invisible">Období</label>
                     <input type="date" id="rangeToDate"
@@ -161,7 +157,6 @@
                     </div>
                 </div>
             </div>
-
 
             <div class="form-row">
                 <div class="form-group col">
@@ -205,10 +200,10 @@
 
         <div id="graphs" ng-show="$root.selectDevice!=null && $root.selectDevice.traffics.length>0 && !showInfoLoading">
             <h4 class="mt-4">Průměrná rychlost</h4>
-            <canvas id="graphAverageSpeed"></canvas>
+            <graph-average-speed></graph-average-speed>
 
             <h4 class="mt-4">Počet vozidel</h4>
-            <canvas id="graphNumberVehicles" class="mb-5"></canvas>
+            <graph-number-vehicles></graph-number-vehicles>
 
             <div class="text-center">
                 <a class="btn btn-dark" href="{{ urlExportCsv }}" role="button">Export CSV</a>
