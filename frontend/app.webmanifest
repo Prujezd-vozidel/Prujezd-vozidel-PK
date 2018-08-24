@@ -1,0 +1,13 @@
+{
+  "name": "Průjezd vozidel - Plzeňský kraj",
+  "short_name": "PVPK",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "Zobrazení dat o průjezdu vozidel pro Plzeňský kraj.",
+  "icons": [{
+    "src": "./assets/img/favicon.png",
+    "sizes": "20x18",
+    "type": "image/png"
+  }]
+}

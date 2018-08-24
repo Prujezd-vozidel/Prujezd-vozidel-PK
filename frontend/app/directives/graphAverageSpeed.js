@@ -1,6 +1,6 @@
 angular.module('pvpk')
     .component('graphAverageSpeed', {
-        template: '<div><canvas id="graphAverageSpeed" class="graphSize mb-5"></canvas></div>',
+        template: '<div><canvas id="graphAverageSpeed" class="graph-size mb-5"></canvas></div>',
         controller: ['$rootScope', '$scope', function ($rootScope, $scope) {
 
             $rootScope.$on('renderGraphAverageSpeed', function (event, args) {

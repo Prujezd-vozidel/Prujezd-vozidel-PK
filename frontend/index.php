@@ -8,16 +8,18 @@
     <meta name="description" content="Zobrazení dat o průjezdu vozidel pro Plzeňský kraj">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <link rel="manifest" href="app.webmanifest">
+
     <link rel="apple-touch-icon" href="./assets/img/favicon.png">
     <link rel="icon" href="./assets/img/favicon.png">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
-          integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="./assets/css/styles.min.css">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-resource.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular-resource.min.js"></script>
+    <!--    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular-sanitize.min.js"></script>-->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
@@ -42,7 +44,7 @@
 <div id="loadingScreen" ng-show="showLoadingScreen">
     <h1 id="logo">
         <img src="./assets/img/favicon.png" alt="logo"> Průjezd vozidel
-        <small class="text-muted">Plzeňský kraj</small>
+        <small>Plzeňský kraj</small>
     </h1>
     <div class="loading"></div>
     <noscript id="noscript">Aplikace vyžaduje Javascript. Aktivujte Javascript a znovu načtěte tuto stránku.
@@ -58,11 +60,11 @@
             <header class="mt-2">
                 <h1>
                     <img src="./assets/img/favicon.png" alt="logo"> Průjezd vozidel
-                    <small class="text-muted">Plzeňský kraj</small>
+                    <small>Plzeňský kraj</small>
                 </h1>
             </header>
 
-            <form class="mb-4 mt-4">
+            <div class="mb-4 mt-4">
                 <div class="form-group">
                     <label for="searchLocation" class="h5">Hledání - lokalit</label>
                     <input type="search" id="searchLocation" name="location"
@@ -79,7 +81,7 @@
                            ng-model-options="{debounce: 600}">
                     <label for="searchIsDirection" class="custom-control-label">Rozlišovat směr</label>
                 </div>
-            </form>
+            </div>
 
             <div class="result-locations mb-4 mt-4">
                 <h5>Lokality</h5>
@@ -96,21 +98,20 @@
                             <small ng-show="search.isDirection">{{location.direction ==1 ? 'po směru': 'proti směru' }}
                             </small>
                         </div>
-                        <small>
-                            <address>{{location.street}}, {{location.town}}</address>
-                        </small>
+                        <address class="small">{{location.street}}, {{location.town}}</address>
+
                     </a>
                 </div>
 
-                <div ng-show="locations.length==0 && !showSearchLoading">
-                    <small class="form-text text-muted text-center">Žádná lokalita</small>
+                <div class="form-text text-center small" ng-show="locations.length==0 && !showSearchLoading">
+                    Žádná lokalita
                 </div>
 
                 <div class="loading" ng-show="showSearchLoading"></div>
             </div>
         </div>
-        <footer class="text-center mb-2 mt-2 w-100">
-            <small class="text-muted">© 2018 FAV, ZČU • version: {{ config.APP_VERSION }}</small>
+        <footer class="text-center text-muted mb-2 mt-2 w-100 small">
+            © 2018 FAV, ZČU • version: {{ config.APP_VERSION }}
         </footer>
     </section>
 
@@ -125,11 +126,27 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </h4>
-            <small>
-                <address>{{$root.selectDevice.street}}, {{$root.selectDevice.town}}</address>
-                <span>Směr: <strong>{{$root.selectDevice.direction  ? ($root.selectDevice.direction ==1 ? 'po směru': 'proti směru') : 'po směru i proti směru'}}</strong></span>
-            </small>
+            <address>{{$root.selectDevice.street}}, {{$root.selectDevice.town}}</address>
         </header>
+
+        <div class="form-inline mb-4 mt-2">
+            <label for="selectDeviceDirection" class="=hidden"></label>
+            <select id="selectDeviceDirection" class="custom-select custom-select-sm"
+                    ng-model="$root.selectDevice.direction"
+                    ng-change="changeDirection(direction.id)"
+                    ng-options="direction.id as direction.name for direction in directions"
+                    ng-model-options="{updateOn: 'default', allowInvalid: true, debounce: 600}">
+            </select>
+        </div>
+
+
+        <div class="alert alert-warning" role="alert"
+             ng-show="!(range.fromDate >= range.minDate && range.toDate <= range.maxDate && range.toDate >= range.minDate && range.fromDate <= range.maxDate)">
+
+            Data jsou k dispozici jen v rosahu {{range.minDate | date:"dd.MM.yyyy"}} - {{range.maxDate| date:"dd.MM.yyyy"}}
+
+        </div>
+
 
         <div class="mb-4 mt-4" ng-form="rangeForm">
             <div class="form-row">
@@ -157,7 +174,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group col">
                     <label for="rangeFromTime">
@@ -199,24 +215,26 @@
         <div class="loading" ng-show="showInfoLoading"></div>
 
         <div id="graphs" ng-show="$root.selectDevice!=null && $root.selectDevice.traffics.length>0 && !showInfoLoading">
-            <h4 class="mt-4">Průměrná rychlost</h4>
+            <h4 class="mt-4">{{range.isTime ? "Průměrná rychlost za den" : "Průměrná rychlost za jednotlivé dny"}}</h4>
             <graph-average-speed></graph-average-speed>
 
-            <h4 class="mt-4">Počet vozidel</h4>
+            <h4 class="mt-4">{{range.isTime ? "Počet vozidel za den" : "Průměrná rychlost za jednotlivé dny"}}</h4>
             <graph-number-vehicles></graph-number-vehicles>
 
             <div class="text-center">
                 <a class="btn btn-dark" href="{{ urlExportCsv }}" role="button">Export CSV</a>
             </div>
 
-            <div class="text-center mb-2 mt-2 w-100">
-                <small class="text-muted">zdroj dat: <a target="_blank" href="https://doprava.plzensky-kraj.cz">doprava.plzensky-kraj.cz</a>
-                </small>
+            <div class="text-center mb-2 mt-2 w-100 small">
+                zdroj dat: <a class="source-link" target="_blank" rel="noopener"
+                              href="https://doprava.plzensky-kraj.cz">doprava.plzensky-kraj.cz</a>
+
             </div>
         </div>
 
-        <div ng-show="$root.selectDevice && $root.selectDevice.traffics.length==0 && !showInfoLoading">
-            <small class="form-text text-muted text-center">Data nejsou k dispozici</small>
+        <div class="form-text text-center small"
+             ng-show="$root.selectDevice && $root.selectDevice.traffics.length==0 && !showInfoLoading">
+            Data nejsou k dispozici
         </div>
     </section>
 
@@ -234,7 +252,7 @@
                 <h5 class="modal-title">{{modalError.title}}</h5>
             </div>
             <div class="modal-body">
-                <p ng-bind-html="modalError.body"></p>
+                <p>{{modalError.body}}</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-dismiss="{{modalError.clickButton ? '' : 'modal'}}"
@@ -249,8 +267,8 @@
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
 
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
-        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSx7hyAzQiG5uocJTeZgf1Z3lpDy4kpEk"

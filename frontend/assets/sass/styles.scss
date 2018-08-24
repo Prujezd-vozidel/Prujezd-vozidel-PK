@@ -53,6 +53,15 @@ body {
   header address {
     margin: 0;
   }
+
+  .source-link {
+    color: $color-black;
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 @media (max-width: 991.98px) {
@@ -151,7 +160,7 @@ body {
 
 /* GRAPH */
 
-.graphSize {
+.graph-size {
   width: 100%;
 }
 

@@ -1,1 +1,1 @@
-angular.module('pvpk', ['ngResource', 'ngSanitize']);
+angular.module('pvpk', ['ngResource']);

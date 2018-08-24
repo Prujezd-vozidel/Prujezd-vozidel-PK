@@ -48,6 +48,20 @@ class Zaznam extends BaseModel
     }
 
     /**
+     * Vrati posledni datum pro ktere existuji zaznamy v tabulce zaznam_prum_den.
+     * @return String Posledni datum pro ktere existuji zaznamy.
+     */
+    public static function lastDateAndFirstDate() {
+        return DB::table('zaznam_prum_den')
+            ->join('datum', 'zaznam_prum_den.datum_id', '=', 'datum.id')
+            ->select(DB::raw('
+                max(date(datum.od)) as last_date,
+                min(date(datum.od)) as first_date'
+            ))
+            ->first();
+    }
+
+    /**
      * Vrati prumery dopravy v casovem useku podle typu vozidla.
      *
      * @param String $deviceId Id zarizeni pro ktere budou vraceny zaznamy.

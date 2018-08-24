@@ -60,7 +60,7 @@ angular.module('pvpk')
                 case 401:
                     $scope.modalError = {
                         title: 'Platnost webové aplikace vypršela',
-                        body: 'Pro obnovení platnosti stačí stisknout tlačítko <strong>Obnovit</strong>.',
+                        body: 'Pro obnovení platnosti stačí stisknout tlačítko Obnovit.',
                         button: 'Obnovit',
                         clickButton: $scope.reloadApp
                     };

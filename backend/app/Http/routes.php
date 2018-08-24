@@ -30,6 +30,13 @@ $app->get($apiUrlRoot.'devices', [
     'uses' => 'DeviceController@getDevice'
 ]);
 
+/**
+ * Vrati časový rozsah
+ */
+$app->get($apiUrlRoot.'range', [
+    'middleware' => [$corsMiddle, $jwtMiddle],
+    'uses' => 'RangeController@getRange'
+]);
 
 /**
  * Vrati zaznamy o doprave za casovy usek pro dane zarizeni.

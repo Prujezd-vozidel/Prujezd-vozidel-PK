@@ -1,8 +1,8 @@
-angular.module('pvpk', ['ngResource', 'ngSanitize']);
+angular.module('pvpk', ['ngResource']);
 angular.module('pvpk')
     .constant('config', {
         APP_NAME: 'PVPK',
-        APP_VERSION: '1.3.0',
+        APP_VERSION: '1.3.3',
         API_URL: API_URL,
         API_TOKEN: API_TOKEN,
         DEFAULT_POSITION: {lat: 49.53, lng: 13.3},
@@ -12,13 +12,71 @@ angular.module('pvpk')
         DEFAULT_RANGE_TIME_HOUR: {from: 7, to: 16}
     });
 angular.module('pvpk')
-    .controller('infoController', ['$rootScope', '$scope', '$location', 'config', 'Device', 'Vehicle', function ($rootScope, $scope, $location, config, Device, Vehicle) {
+    .factory('Device', ['$resource', 'config', function ($resource, config) {
+        return $resource(config.API_URL + '/devices/:id', {id: '@id', period: '@period'}, {
+            'get': {
+                url: config.API_URL + '/devices/:id/:period',
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'jwt': config.API_TOKEN
+                }
+            },
+            'query': {
+                url: config.API_URL + '/devices',
+                method: 'GET',
+                isArray: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'jwt': config.API_TOKEN
+                }
+            }
+        });
+    }]);
+angular.module('pvpk')
+    .factory('Range', ['$resource', 'config', function ($resource, config) {
+        return $resource(config.API_URL + '/range', null, {
+            'get': {
+                url: config.API_URL + '/range',
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'jwt': config.API_TOKEN
+                }
+            }
+        });
+    }]);
+angular.module('pvpk')
+    .factory('Vehicle', ['$resource', 'config', function ($resource, config) {
+        return $resource(config.API_URL + '/vehicles', null, {
+            'query': {
+                url: config.API_URL + '/vehicles',
+                method: 'GET',
+                isArray: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'jwt': config.API_TOKEN
+                }
+            }
+        });
+    }]);
+angular.module('pvpk')
+    .controller('infoController', ['$rootScope', '$scope', '$location', 'config', 'Device', 'Vehicle', 'Range', function ($rootScope, $scope, $location, config, Device, Vehicle, Range) {
 
         this.$onInit = function () {
             $rootScope.selectDevice = null;
             $scope.showInfoLoading = false;
             $scope.vehicles = [];
             $scope.urlExportCsv = null;
+            $scope.directions = [
+                {id: undefined, name: 'po směru i proti směru'},
+                {id: 1, name: 'po směru'},
+                {id: 2, name: 'proti směru'}];
+            $scope.isLoadRange = false;
 
             Vehicle.query(null, function (data) {
                 $scope.vehicles = data;
@@ -33,13 +91,29 @@ angular.module('pvpk')
 
         $rootScope.$on('setRangeFromUrl', function (event, args) {
             var params = $location.search();
+
             $scope.range = {
                 fromDate: moment(params.fromDate, 'YYYY-MM-DD').isValid() ? moment(params.fromDate).toDate() : moment().add(config.DEFAULT_RANGE_DATE_DAY.from, 'd').toDate(),
                 toDate: moment(params.toDate, 'YYYY-MM-DD').isValid() ? moment(params.toDate).toDate() : moment().add(config.DEFAULT_RANGE_DATE_DAY.to, 'd').toDate(),
                 fromTime: moment(params.fromTime, 'HH:mm').isValid() ? moment(params.fromTime, 'HH:mm').toDate() : moment({hour: config.DEFAULT_RANGE_TIME_HOUR.from}).toDate(),
                 toTime: moment(params.toTime, 'HH:mm').isValid() ? moment(params.toTime, 'HH:mm').toDate() : moment({hour: config.DEFAULT_RANGE_TIME_HOUR.to}).toDate(),
-                isTime: params.isTime == 0 ? false : true
+                isTime: params.isTime == 0 ? false : true,
+                maxDate: $scope.range == null ? null : $scope.range.maxDate,
+                minDate: $scope.range == null ? null : $scope.range.minDate
             };
+
+            if (!$scope.isLoadRange) {
+                Range.get(null, function (data) {
+                    $scope.range.fromDate = moment.max(moment(data.last_date).add(config.DEFAULT_RANGE_DATE_DAY.from, 'd'), moment(data.first_date)).toDate();
+                    $scope.range.toDate = moment.min(moment($scope.range.toDate), moment(data.last_date)).toDate();
+                    $scope.range.maxDate = moment(data.last_date).toDate();
+                    $scope.range.minDate = moment(data.first_date).toDate();
+                    $scope.isLoadRange = true;
+                }, function (response) {
+                    console.log('Error api get Range');
+                    $rootScope.handleErrorResponse(response);
+                });
+            }
         });
 
         $rootScope.$on('infoLocation', function (event, args) {
@@ -92,6 +166,13 @@ angular.module('pvpk')
                 return;
             }
 
+            if (!($scope.range.fromDate >= $scope.range.minDate && $scope.range.toDate <= $scope.range.maxDate
+                && $scope.range.toDate >= $scope.range.minDate && $scope.range.fromDate <= $scope.range.maxDate)) {
+                $rootScope.selectDevice.traffics = [];
+                return;
+            }
+
+
             var range = $scope.getRange();
 
             var params = $location.search();
@@ -107,6 +188,14 @@ angular.module('pvpk')
                     id: $rootScope.selectDevice.id,
                     direction: $rootScope.selectDevice.direction
                 });
+        };
+
+        $scope.changeDirection = function () {
+
+            $rootScope.$emit('infoLocation', {
+                id: $rootScope.selectDevice.id,
+                direction: $rootScope.selectDevice.direction
+            });
         };
 
         $scope.getRange = function () {
@@ -153,7 +242,6 @@ angular.module('pvpk')
                     borderWidth: 2,
                     label: vehicle.name,
                     fill: false,
-                    //fill: 'start',
                     backgroundColor: color[vehicle.id].replace("#alpha", "0.3"),
                     borderColor: color[vehicle.id].replace("#alpha", "1"),
                     cubicInterpolationMode: 'monotone',
@@ -166,12 +254,12 @@ angular.module('pvpk')
                         l++;
                         if (datasetNumberVehicles.data.length < l) {
                             datasetNumberVehicles.data.push(0);
-                            datasetAverageSpeed.data.push(null);
+                            datasetAverageSpeed.data.push(0);
                         }
                     }
                     if (traffic.typeVehicleId === vehicle.id) {
                         datasetNumberVehicles.data.push($scope.range.isTime ? traffic.numberVehicleAverage : traffic.numberVehicle);
-                        datasetAverageSpeed.data.push(traffic.speedAverage <= 0 ? null : traffic.speedAverage);
+                        datasetAverageSpeed.data.push(traffic.speedAverage <= 0 ? 0 : traffic.speedAverage);
                     }
                 }
                 datasetsNumberVehicles.push(datasetNumberVehicles);
@@ -267,7 +355,7 @@ angular.module('pvpk')
                 case 401:
                     $scope.modalError = {
                         title: 'Platnost webové aplikace vypršela',
-                        body: 'Pro obnovení platnosti stačí stisknout tlačítko <strong>Obnovit</strong>.',
+                        body: 'Pro obnovení platnosti stačí stisknout tlačítko Obnovit.',
                         button: 'Obnovit',
                         clickButton: $scope.reloadApp
                     };
@@ -434,7 +522,7 @@ angular.module('pvpk')
     }]);
 angular.module('pvpk')
     .component('graphAverageSpeed', {
-        template: '<div><canvas id="graphAverageSpeed" class="graphSize mb-5"></canvas></div>',
+        template: '<div><canvas id="graphAverageSpeed" class="graph-size mb-5"></canvas></div>',
         controller: ['$rootScope', '$scope', function ($rootScope, $scope) {
 
             $rootScope.$on('renderGraphAverageSpeed', function (event, args) {
@@ -488,7 +576,7 @@ angular.module('pvpk')
     });
 angular.module('pvpk')
     .component('graphNumberVehicles', {
-        template: '<div><canvas id="graphNumberVehicles" class="graphSize mb-5"></canvas></div>',
+        template: '<div><canvas id="graphNumberVehicles" class="graph-size mb-5"></canvas></div>',
         controller: ['$rootScope', '$scope', function ($rootScope, $scope) {
 
             $rootScope.$on('renderGraphNumberVehicles', function (event, args) {
@@ -536,42 +624,3 @@ angular.module('pvpk')
 
         }]
     });
-angular.module('pvpk')
-    .factory('Device', ['$resource', 'config', function ($resource, config) {
-        return $resource(config.API_URL + '/devices/:id', {id: '@id', period: '@period'}, {
-            'get': {
-                url: config.API_URL + '/devices/:id/:period',
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'jwt': config.API_TOKEN
-                }
-            },
-            'query': {
-                url: config.API_URL + '/devices',
-                method: 'GET',
-                isArray: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'jwt': config.API_TOKEN
-                }
-            }
-        });
-    }]);
-angular.module('pvpk')
-    .factory('Vehicle', ['$resource', 'config', function ($resource, config) {
-        return $resource(config.API_URL + '/vehicles', null, {
-            'query': {
-                url: config.API_URL + '/vehicles',
-                method: 'GET',
-                isArray: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'jwt': config.API_TOKEN
-                }
-            }
-        });
-    }]);

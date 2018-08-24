@@ -41,9 +41,9 @@ gulp.task('build-js', function () {
     return gulp.src([
         './app/app.module.js',
         './app/app.config.js',
+        './app/services/*.js',
         './app/controllers/*.js',
-        './app/directives/*.js',
-        './app/services/*.js'
+        './app/directives/*.js'
     ])
         .pipe(sourcemaps.init())
         .pipe(concat('app.js'))
@@ -58,7 +58,7 @@ gulp.task('build-js', function () {
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('build-sass', gulp.series('fix-sass', 'sass'));
+gulp.task('build-sass', gulp.series('lint-sass', 'sass'));
 
 gulp.task('build', gulp.parallel('build-sass', 'build-js'));
 

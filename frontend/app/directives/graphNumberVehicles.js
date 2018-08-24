@@ -1,6 +1,6 @@
 angular.module('pvpk')
     .component('graphNumberVehicles', {
-        template: '<div><canvas id="graphNumberVehicles" class="graphSize mb-5"></canvas></div>',
+        template: '<div><canvas id="graphNumberVehicles" class="graph-size mb-5"></canvas></div>',
         controller: ['$rootScope', '$scope', function ($rootScope, $scope) {
 
             $rootScope.$on('renderGraphNumberVehicles', function (event, args) {

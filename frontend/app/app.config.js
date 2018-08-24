@@ -1,7 +1,7 @@
 angular.module('pvpk')
     .constant('config', {
         APP_NAME: 'PVPK',
-        APP_VERSION: '1.3.0',
+        APP_VERSION: '1.3.3',
         API_URL: API_URL,
         API_TOKEN: API_TOKEN,
         DEFAULT_POSITION: {lat: 49.53, lng: 13.3},
