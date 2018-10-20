@@ -154,7 +154,7 @@
                     <label for="rangeFromDate">Období</label>
                     <input type="date" id="rangeFromDate"
                            class="form-control form-control-sm" ng-model="range.fromDate" required
-                           ng-class="{ 'is-invalid': range.fromDate>=range.toDate}"
+                           ng-class="{ 'is-invalid': range.fromDate>range.toDate}"
                            ng-change="changeRange()"
                            ng-model-options="{updateOn: 'default', allowInvalid: true, debounce: 600}">
                     <div class="invalid-feedback">
@@ -166,7 +166,7 @@
                     <label for="rangeToDate" class="invisible">Období</label>
                     <input type="date" id="rangeToDate"
                            class="form-control form-control-sm" ng-model="range.toDate" required
-                           ng-class="{ 'is-invalid': range.fromDate>=range.toDate}"
+                           ng-class="{ 'is-invalid': range.fromDate>range.toDate}"
                            ng-change="changeRange()"
                            ng-model-options="{updateOn: 'default', allowInvalid: true, debounce: 600}">
                     <div class="invalid-feedback">

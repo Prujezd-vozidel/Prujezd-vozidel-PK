@@ -161,7 +161,7 @@ angular.module('pvpk')
         };
 
         $scope.changeRange = function () {
-            if ($scope.range.fromDate >= $scope.range.toDate || ($scope.range.isTime && $scope.range.fromTime >= $scope.range.toTime)) {
+            if ($scope.range.fromDate > $scope.range.toDate || ($scope.range.isTime && $scope.range.fromTime >= $scope.range.toTime)) {
                 $rootScope.selectDevice.traffics = [];
                 return;
             }
