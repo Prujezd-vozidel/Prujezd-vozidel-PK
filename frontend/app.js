@@ -166,13 +166,6 @@ angular.module('pvpk')
                 return;
             }
 
-            if (!($scope.range.fromDate >= $scope.range.minDate && $scope.range.toDate <= $scope.range.maxDate
-                && $scope.range.toDate >= $scope.range.minDate && $scope.range.fromDate <= $scope.range.maxDate)) {
-                $rootScope.selectDevice.traffics = [];
-                return;
-            }
-
-
             var range = $scope.getRange();
 
             var params = $location.search();
