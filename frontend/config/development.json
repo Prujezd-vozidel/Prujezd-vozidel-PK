@@ -1,0 +1,4 @@
+{
+  "API_URL": "./../../backend/public/api/v1",
+  "TOKEN_GENERATOR_PATH": "../../backend/lib/generateToken.php"
+}
